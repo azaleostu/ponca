@@ -233,34 +233,34 @@ public:
 
     // Query -------------------------------------------------------------------
 public :
-    KdTreeKNearestPointQuery<DataPoint> k_nearest_neighbors(const VectorType& point, int k) const
+    KdTreeKNearestPointQuery<DataPoint, Compatibility> k_nearest_neighbors(const VectorType& point, int k) const
     {
-        return KdTreeKNearestPointQuery<DataPoint>(this, k, point);
+        return KdTreeKNearestPointQuery<DataPoint, Compatibility>(this, k, point);
     }
 
-    KdTreeKNearestIndexQuery<DataPoint> k_nearest_neighbors(int index, int k) const
+    KdTreeKNearestIndexQuery<DataPoint, Compatibility> k_nearest_neighbors(int index, int k) const
     {
-        return KdTreeKNearestIndexQuery<DataPoint>(this, k, index);
+        return KdTreeKNearestIndexQuery<DataPoint, Compatibility>(this, k, index);
     }
 
-    KdTreeNearestPointQuery<DataPoint> nearest_neighbor(const VectorType& point) const
+    KdTreeNearestPointQuery<DataPoint, Compatibility> nearest_neighbor(const VectorType& point) const
     {
-        return KdTreeNearestPointQuery<DataPoint>(this, point);
+        return KdTreeNearestPointQuery<DataPoint, Compatibility>(this, point);
     }
 
-    KdTreeNearestIndexQuery<DataPoint> nearest_neighbor(int index) const
+    KdTreeNearestIndexQuery<DataPoint, Compatibility> nearest_neighbor(int index) const
     {
-        return KdTreeNearestIndexQuery<DataPoint>(this, index);
+        return KdTreeNearestIndexQuery<DataPoint, Compatibility>(this, index);
     }
 
-    KdTreeRangePointQuery<DataPoint> range_neighbors(const VectorType& point, Scalar r) const
+    KdTreeRangePointQuery<DataPoint, Compatibility> range_neighbors(const VectorType& point, Scalar r) const
     {
-        return KdTreeRangePointQuery<DataPoint>(this, r, point);
+        return KdTreeRangePointQuery<DataPoint, Compatibility>(this, r, point);
     }
 
-    KdTreeRangeIndexQuery<DataPoint> range_neighbors(int index, Scalar r) const
+    KdTreeRangeIndexQuery<DataPoint, Compatibility> range_neighbors(int index, Scalar r) const
     {
-        return KdTreeRangeIndexQuery<DataPoint>(this, r, index);
+        return KdTreeRangeIndexQuery<DataPoint, Compatibility>(this, r, index);
     }
     
 
