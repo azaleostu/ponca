@@ -271,7 +271,7 @@ protected:
     IndexContainer m_indices;
 
     LeafSizeType m_min_cell_size;
-    LeafCountType m_leaf_count; ///< Number of leaves in the Kdtree (computed during construction)
+    NodeCountType m_leaf_count; ///< Number of leaves in the Kdtree (computed during construction)
 };
 
 #include "./kdTree.hpp"
