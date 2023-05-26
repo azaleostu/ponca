@@ -35,15 +35,14 @@ struct DefaultKdTreeCompatibility
     typedef typename DataPoint::Scalar     Scalar;
     typedef typename DataPoint::VectorType VectorType;
 
-    typedef Eigen::AlignedBox<Scalar, DataPoint::Dim> AabbType;
-
     typedef int DimType;
     typedef int DepthType;
 
     // Containers
-    typedef std::vector<DataPoint>                 PointContainer;
-    typedef std::vector<int>                       IndexContainer;
-    typedef std::vector<DefaultKdTreeNode<Scalar>> NodeContainer;
+    typedef std::vector<DataPoint> PointContainer;
+    typedef std::vector<int>       IndexContainer;
+
+    typedef std::vector<DefaultKdTreeNode<DataPoint>> NodeContainer;
 };
 
 ///
@@ -59,8 +58,7 @@ public:
     typedef typename Compatibility::Scalar     Scalar; // Scalar given by user
     typedef typename Compatibility::VectorType VectorType; // VectorType given by user
 
-    typedef typename Compatibility::AabbType Aabb; // Intersections
-
+    typedef typename Compatibility::DimType   DimType;
     typedef typename Compatibility::DepthType DepthType;
 
     typedef typename Compatibility::PointContainer PointContainer; // Container for VectorType used inside the KdTree
