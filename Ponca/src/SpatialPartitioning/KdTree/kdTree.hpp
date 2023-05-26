@@ -27,8 +27,8 @@ inline void KdTree<DataPoint, Compatibility>::build(const PointUserContainer& po
 template<class DataPoint, class Compatibility>
 template<typename PointUserContainer, typename IndexUserContainer, typename Converter>
 inline void KdTree<DataPoint, Compatibility>::buildWithSampling(const PointUserContainer& points,
-                                                                 const IndexUserContainer& sampling,
-                                                                 Converter c)
+                                                                const IndexUserContainer& sampling,
+                                                                Converter c)
 {
     this->clear();
 

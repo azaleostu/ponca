@@ -8,9 +8,6 @@
 
 #include "./kdTreeNode.h"
 
-#include <Eigen/Eigen>
-#include <Eigen/Geometry> // aabb
-
 #include <memory>
 #include <numeric>
 #include <type_traits>

@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <Eigen/Geometry> // aabb
+
 namespace Ponca {
 template<typename Scalar>
 struct DefaultKdTreeInnerNode
