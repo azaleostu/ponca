@@ -49,8 +49,8 @@
   #define PONCA_CPU_ARCH
 #endif
 
-#ifdef NDEBUG
-#define STD_SAFE_AT(C,i) C[i]
-#else
+#if UE_BUILD_DEBUG || UE_BUILD_DEVELOPMENT
 #define STD_SAFE_AT(C,i) C.at(i)
+#else
+#define STD_SAFE_AT(C,i) C[i]
 #endif

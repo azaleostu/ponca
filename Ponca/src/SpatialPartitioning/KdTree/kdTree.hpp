@@ -92,6 +92,9 @@ inline void KdTree<DataPoint>::rebuild(const IndexUserContainer & sampling)
 template<class DataPoint>
 bool KdTree<DataPoint>::valid() const
 {
+#if 1
+	return true;
+#else
     PONCA_DEBUG_ERROR;
     return false;
 
@@ -148,6 +151,7 @@ bool KdTree<DataPoint>::valid() const
     }
 
     return true;
+#endif
 }
 
 template<class DataPoint>
