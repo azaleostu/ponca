@@ -13,7 +13,7 @@
 #define PCA_KDTREE_MAX_DEPTH 32
 
 namespace Ponca {
-template<class DataPoint> class KdTree;
+template <class DataPoint, class Compatibility> class KdTree;
 
 template <class DataPoint>
 class KdTreeQuery
