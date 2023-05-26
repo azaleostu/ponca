@@ -7,31 +7,6 @@
 // KdTree ----------------------------------------------------------------------
 
 template<class DataPoint>
-int KdTree<DataPoint>::node_count() const
-{
-    return static_cast<int>(m_nodes.size());
-}
-
-template<class DataPoint>
-int KdTree<DataPoint>::index_count() const
-{
-    return static_cast<int>(m_indices.size());
-}
-
-template<class DataPoint>
-int KdTree<DataPoint>::point_count() const
-{
-    return static_cast<int>(m_points.size());
-}
-
-
-template<class DataPoint>
-int KdTree<DataPoint>::leaf_count() const
-{
-    return m_leaf_count;
-}
-
-template<class DataPoint>
 void KdTree<DataPoint>::clear()
 {
     m_points.clear();
@@ -44,9 +19,9 @@ template<class DataPoint>
 template<typename PointUserContainer, typename Converter>
 inline void KdTree<DataPoint>::build(const PointUserContainer& points, Converter c)
 {
-    std::vector<int> ids(points.size());
+    IndexContainer ids(points.size());
     std::iota(ids.begin(), ids.end(), 0);
-    this->buildWithSampling(points, ids, c);
+    this->buildWithSampling(points, std::move(ids), c);
 }
 
 template<class DataPoint>
@@ -63,7 +38,6 @@ inline void KdTree<DataPoint>::buildWithSampling(const PointUserContainer& point
     m_nodes = NodeContainer();
     m_nodes.reserve(4 * point_count() / m_min_cell_size);
     m_nodes.emplace_back();
-    m_nodes.back().leaf = false;
 
     m_indices = IndexContainer(sampling);//move operator ou std copy
 
@@ -80,7 +54,6 @@ inline void KdTree<DataPoint>::rebuild(const IndexUserContainer & sampling)
 
     m_nodes.clear();
     m_nodes.emplace_back();
-    m_nodes.back().leaf = false;
 
     m_indices = sampling;
 
@@ -120,13 +93,13 @@ bool KdTree<DataPoint>::valid() const
         }
         b[idx] = true;
     }
-        
-    for(int n=0;n<node_count();++n)
+
+    for(NodeCountType n=0;n<node_count();++n)
     {
-        const KdTreeNode<Scalar>& node = m_nodes.operator[](n);
-        if(node.leaf)
+        const NodeType& node = m_nodes.operator[](n);
+        if(node.is_leaf())
         {
-            if(index_count() <= node.start || index_count() < node.start+node.size)
+            if(index_count() <= node.leaf.start || index_count() < node.leaf.start+node.leaf.size)
             {
                 PONCA_DEBUG_ERROR;
                 return false;
@@ -134,12 +107,12 @@ bool KdTree<DataPoint>::valid() const
         }
         else
         {
-            if(node.dim < 0 || 2 < node.dim)
+            if(node.inner.dim < 0 || 2 < node.inner.dim)
             {
                 PONCA_DEBUG_ERROR;
                 return false;
             }
-            if(node_count() <= node.firstChildId || node_count() <= node.firstChildId+1u)
+            if(node_count() <= node.inner.first_child_id || node_count() <= node.inner.first_child_id+1)
             {
                 PONCA_DEBUG_ERROR;
                 return false;
@@ -157,110 +130,76 @@ std::string KdTree<DataPoint>::to_string() const
     
     std::stringstream str;
     str << "indices (" << index_count() << ") :\n";
-    for(int i=0; i<index_count(); ++i)
+    for(IndexCountType i=0; i<index_count(); ++i)
     {
         str << "  " << i << ": " << m_indices.operator[](i) << "\n";
     }
     str << "nodes (" << node_count() << ") :\n";
-    for(int n=0; n< node_count(); ++n)
+    for(NodeCountType n=0; n< node_count(); ++n)
     {
-        const KdTreeNode<Scalar>& node = m_nodes.operator[](n);
-        if(node.leaf)
+        const NodeType& node = m_nodes.operator[](n);
+        if(node.is_leaf())
         {
-            int end = node.start + node.size;
-            str << "  leaf: start=" << node.start << " end=" << end << " (size=" << node.size << ")\n";
+            auto end = node.leaf.start + node.leaf.size;
+            str << "  leaf: start=" << node.leaf.start << " end=" << end << " (size=" << node.leaf.size << ")\n";
         }
         else
         {
-            str << "  node: dim=" << node.dim << " split=" << node.splitValue << " child=" << node.firstChildId << "\n";
+            str << "  node: dim=" << node.inner.dim << " split=" << node.inner.split_value << " child=" << node.inner.first_child_id << "\n";
         }
     }
     return str.str();
 }
 
 template<class DataPoint>
-int KdTree<DataPoint>::min_cell_size() const
+void KdTree<DataPoint>::build_rec(NodeCountType node_id, IndexCountType start, IndexCountType end, DepthType level)
 {
-    return m_min_cell_size;
+    NodeType& node = m_nodes[node_id];
+    for(IndexCountType i=start; i<end; ++i)
+        node.aabb.extend(m_points[m_indices[i]].pos());
+
+	if (end-start <= m_min_cell_size || level >= PCA_KDTREE_MAX_DEPTH)
+	{
+		PONCA_ASSERT_MSG(end-start <= std::numeric_limits<LeafSizeType>::max(), "Leaf size overflow");
+
+		node.set_is_leaf(true);
+
+		node.leaf.start = start;
+		node.leaf.size = static_cast<LeafSizeType>(end-start);
+		++m_leaf_count;
+	}
+	else
+	{
+		node.set_is_leaf(false);
+
+		DimType dim;
+		(Scalar(0.5) * (node.aabb.max() - node.aabb.min())).maxCoeff(&dim);
+		node.inner.dim = dim;
+		node.inner.split_value = node.aabb.center()(dim);
+
+		IndexCountType mid_id = this->partition(start, end, dim, node.inner.split_value);
+		node.inner.first_child_id = m_nodes.size();
+		m_nodes.emplace_back();
+		m_nodes.emplace_back();
+
+		build_rec(node.inner.first_child_id, start, mid_id, level+1);
+		build_rec(node.inner.first_child_id+1, mid_id, end, level+1);
+	}
 }
 
 template<class DataPoint>
-void KdTree<DataPoint>::set_min_cell_size(int min_cell_size)
-{
-    m_min_cell_size = min_cell_size;
-}
-
-template<class DataPoint>
-void KdTree<DataPoint>::build_rec(int node_id, int start, int end, int level)
-{   
-    KdTreeNode<Scalar>& node = m_nodes[node_id];
-    Aabb aabb;
-    for(int i=start; i<end; ++i)
-        aabb.extend(m_points[m_indices[i]].pos());
-    
-    int dim;
-    (Scalar(0.5) * (aabb.max() - aabb.min())).maxCoeff(&dim);
-    node.dim = dim;
-    node.splitValue = aabb.center()(dim);
-    
-    int midId = this->partition(start, end, dim, node.splitValue);
-    node.firstChildId = m_nodes.size();
-    
-    {
-        KdTreeNode<Scalar> n;
-        n.size = 0;
-        m_nodes.push_back(n);
-        m_nodes.push_back(n);
-    }
-    {
-        // left child
-        int childId = m_nodes[node_id].firstChildId;
-        KdTreeNode<Scalar>& child = m_nodes[childId];
-        if(midId-start <= m_min_cell_size || level >= PCA_KDTREE_MAX_DEPTH)
-        {
-            child.leaf = 1;
-            child.start = start;
-            child.size = midId-start;
-            m_leaf_count++;
-        }
-        else
-        {
-            child.leaf = 0;
-            this->build_rec(childId, start, midId, level+1);
-        }
-    }
-    {
-        // right child
-        int childId = m_nodes[node_id].firstChildId+1;
-        KdTreeNode<Scalar>& child = m_nodes[childId];
-        if(end-midId <= m_min_cell_size || level >= PCA_KDTREE_MAX_DEPTH)
-        {
-            child.leaf = 1;
-            child.start = midId;
-            child.size = end-midId;
-            m_leaf_count++;
-        }
-        else
-        {
-            child.leaf = 0;
-            this->build_rec(childId, midId, end, level+1);
-        }
-    }
-}
-
-template<class DataPoint>
-int KdTree<DataPoint>::partition(int start, int end, int dim, Scalar value)
+auto KdTree<DataPoint>::partition(IndexCountType start, IndexCountType end, DimType dim, Scalar value)
+	-> IndexCountType
 {
     const auto& points = m_points;
     auto& indices  = m_indices;
     
-    auto it = std::partition(indices.begin()+start, indices.begin()+end, [&](int i)
+    auto it = std::partition(indices.begin()+start, indices.begin()+end, [&](IndexType i)
     {
         return points[i].pos()[dim] < value;
     });
         
     auto distance = std::distance(m_indices.begin(), it);
     
-    return static_cast<int>(distance);
+    return static_cast<IndexCountType>(distance);
 }
-
