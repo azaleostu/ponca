@@ -10,26 +10,10 @@
 #define PONCA_XSTR(S) #S
 #define PONCA_STR(S) PONCA_XSTR(S)
 
-#define PONCA_CRASH                                                             \
-    PONCA_MACRO_START                                                           \
-    asm volatile ("int $3");                                                   \
-    PONCA_MACRO_END
-
-#define PONCA_PRINT_ERROR(MSG)                                                  \
-    PONCA_MACRO_START                                                           \
-    fprintf(stderr,                                                            \
-            "%s:%i: [Error] %s\n",                                             \
-            __FILE__,__LINE__,MSG);                                            \
-    fflush(stderr);                                                            \
-    PONCA_MACRO_END
-
-#define PONCA_PRINT_WARNING(MSG)                                                \
-    PONCA_MACRO_START                                                           \
-    fprintf(stderr,                                                            \
-            "%s:%i: [Warning] %s\n",                                           \
-            __FILE__,__LINE__,MSG);                                            \
-    fflush(stderr);                                                            \
-    PONCA_MACRO_END
+// legacy
+#define PONCA_CRASH
+#define PONCA_PRINT_ERROR(MSG)
+#define PONCA_PRINT_WARNING(MSG)
 
 // turnoff warning
 #define PONCA_UNUSED(VAR)                                                       \
@@ -37,11 +21,7 @@
     (void)(VAR);                                                               \
     PONCA_MACRO_END
 
-#define PONCA_TODO                                                              \
-    PONCA_MACRO_START                                                           \
-    PONCA_PRINT_ERROR("TODO");                                                  \
-    PONCA_CRASH;                                                                \
-    PONCA_MACRO_END
+#define PONCA_TODO checkf(false, "TODO")
 
 #ifdef __has_builtin
 #if __has_builtin(__builtin_clz)
