@@ -5,7 +5,7 @@
 */
 
 template <class DataPoint, class Compatibility>
-typename KdTreeRangePointQuery<DataPoint>::Iterator KdTreeRangePointQuery<DataPoint, Compatibility>::begin()
+typename KdTreeRangePointQuery<DataPoint, Compatibility>::Iterator KdTreeRangePointQuery<DataPoint, Compatibility>::begin()
 {
     QueryAccelType::reset();
     QueryType::reset();
@@ -15,7 +15,7 @@ typename KdTreeRangePointQuery<DataPoint>::Iterator KdTreeRangePointQuery<DataPo
 }
 
 template <class DataPoint, class Compatibility>
-typename KdTreeRangePointQuery<DataPoint>::Iterator KdTreeRangePointQuery<DataPoint, Compatibility>::end()
+typename KdTreeRangePointQuery<DataPoint, Compatibility>::Iterator KdTreeRangePointQuery<DataPoint, Compatibility>::end()
 {
     return Iterator(this, QueryAccelType::m_kdtree->point_count());
 }

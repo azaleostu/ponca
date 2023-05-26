@@ -50,7 +50,7 @@ struct DefaultKdTreeCompatibility
 ///
 /// \todo Better handle sampling: do not store non-selected points (requires to store original indices
 template<class _DataPoint,
-         class Compatibility = DefaultKdTreeCompatibility<DataPoint>>
+         class Compatibility = DefaultKdTreeCompatibility<_DataPoint>>
 class KdTree
 {
 public:
@@ -178,7 +178,7 @@ public:
         return m_points.size();
     }
 
-    inline LeafCountType leaf_count() const
+    inline NodeCountType leaf_count() const
     {
         return m_leaf_count;
     }
