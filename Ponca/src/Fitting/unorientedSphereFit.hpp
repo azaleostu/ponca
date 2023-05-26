@@ -6,7 +6,7 @@
 
 
 
-#if NEVERDEFINED
+#ifdef NEVERDEFINED
 
 MatrixBB cov = MatrixBB::Zero();
 VectorDd sumP = VectorDd::Zero();
