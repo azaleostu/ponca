@@ -12,6 +12,7 @@ void KdTree<DataPoint, Adapter>::clear()
     m_points.clear();
     m_nodes.clear();
     m_indices.clear();
+    m_depth = 0;
     m_leaf_count = 0;
 }
 
@@ -158,6 +159,9 @@ std::string KdTree<DataPoint, Adapter>::to_string() const
 template<class DataPoint, class Adapter>
 void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType start, IndexCountType end, DepthType level)
 {
+    if (level > m_depth)
+        m_depth = level;
+
     NodeType& node = m_nodes[node_id];
     for(IndexCountType i=start; i<end; ++i)
         node.aabb.extend(m_points[m_indices[i]].pos());
