@@ -48,7 +48,14 @@ public:
 
     typedef std::vector<DefaultKdTreeNode<DataPoint, AabbType>> NodeContainer;
 
-    static void max_dim(const VectorType& vec, Scalar& scalar)
+    static DimType max_dim(const VectorType& vec)
+    {
+        DimType dim;
+        vec.maxCoeff(dim);
+        return dim;
+    }
+
+    static Scalar vec_component(const VectorType& vec, DimType dim)
     {
         vec.maxCoeff(scalar);
     }

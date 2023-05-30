@@ -174,12 +174,12 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
 
         DimType dim;
         if constexpr (std::is_floating_point<Scalar>::value)
-            Adapter::max_dim(Scalar(0.5) * (node.aabb.max() - node.aabb.min()), dim);
+            dim = Adapter::max_dim(Scalar(0.5) * (node.aabb.max() - node.aabb.min()));
         else
-            Adapter::max_dim((node.aabb.max() - node.aabb.min()) / Scalar(2), dim);
+            dim = Adapter::max_dim((node.aabb.max() - node.aabb.min()) / Scalar(2));
 
         node.inner.dim = dim;
-        node.inner.split_value = node.aabb.center()(dim);
+        node.inner.split_value = Adapter::vec_component(node.aabb.center(), dim);
 
         IndexCountType mid_id = this->partition(start, end, dim, node.inner.split_value);
         node.inner.first_child_id = m_nodes.size();
