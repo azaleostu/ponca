@@ -269,7 +269,7 @@ public:
 
     inline void set_max_depth(DepthType max_depth)
     {
-        PONCA_DEBUG_ASSERT(max_depth <= PCA_KDTREE_MAX_DEPTH);
+        PONCA_DEBUG_ASSERT(0 < max_depth && max_depth <= PCA_KDTREE_MAX_DEPTH);
         m_max_depth = max_depth;
     }
 
