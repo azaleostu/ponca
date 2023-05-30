@@ -168,8 +168,6 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
 
     if (end-start <= m_min_cell_size || level == m_max_depth)
     {
-        PONCA_ASSERT_MSG(end-start <= std::numeric_limits<LeafSizeType>::max(), "Leaf size overflow");
-
         node.set_is_leaf(true);
 
         node.leaf.start = start;
@@ -208,9 +206,9 @@ auto KdTree<DataPoint, Adapter>::partition(IndexCountType start, IndexCountType 
     
     auto it = std::partition(indices.begin()+start, indices.begin()+end, [&](IndexType i)
     {
-        return points[i].pos()[dim] < value;
+        return Adapter::vec_component(points[i].pos(), dim) < value;
     });
-        
+
     auto distance = std::distance(m_indices.begin(), it);
     
     return static_cast<IndexCountType>(distance);
