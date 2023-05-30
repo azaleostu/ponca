@@ -57,7 +57,7 @@ public:
 
     static Scalar vec_component(const VectorType& vec, DimType dim)
     {
-        vec.maxCoeff(scalar);
+        return vec(dim);
     }
 };
 
