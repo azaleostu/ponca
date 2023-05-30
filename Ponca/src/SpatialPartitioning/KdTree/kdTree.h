@@ -247,6 +247,7 @@ public:
 
     inline void set_min_cell_size(LeafSizeType min_cell_size)
     {
+        PONCA_DEBUG_ASSERT(min_cell_size > 0);
         m_min_cell_size = min_cell_size;
     }
 
