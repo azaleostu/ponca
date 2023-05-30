@@ -89,6 +89,8 @@ public:
         m_nodes(NodeContainer()),
         m_indices(IndexContainer()),
         m_min_cell_size(64),
+        m_max_depth(PCA_KDTREE_MAX_DEPTH),
+        m_depth(0),
         m_leaf_count(0)
     {
     };
@@ -99,6 +101,8 @@ public:
         m_nodes(NodeContainer()),
         m_indices(IndexContainer()),
         m_min_cell_size(64),
+        m_max_depth(PCA_KDTREE_MAX_DEPTH),
+        m_depth(0),
         m_leaf_count(0)
     {
         this->build(std::forward<PointUserContainer>(points));
@@ -111,6 +115,8 @@ public:
         m_nodes(),
         m_indices(),
         m_min_cell_size(64),
+        m_max_depth(PCA_KDTREE_MAX_DEPTH),
+        m_depth(0),
         m_leaf_count(0)
     {
         buildWithSampling(std::forward<PointUserContainer>(points), std::move(sampling));
@@ -229,6 +235,11 @@ public:
         return m_indices;
     }
 
+    inline DepthType depth() const
+    {
+        return m_depth;
+    }
+
     // Parameters --------------------------------------------------------------
 public:
     inline LeafSizeType min_cell_size() const
@@ -239,6 +250,17 @@ public:
     inline void set_min_cell_size(LeafSizeType min_cell_size)
     {
         m_min_cell_size = min_cell_size;
+    }
+
+    inline DepthType max_depth() const
+    {
+        return m_max_depth;
+    }
+
+    inline void set_max_depth(DepthType max_depth)
+    {
+        PONCA_DEBUG_ASSERT(max_depth <= PCA_KDTREE_MAX_DEPTH);
+        m_max_depth = max_depth;
     }
 
     // Internal ----------------------------------------------------------------
@@ -286,6 +308,8 @@ protected:
     IndexContainer m_indices;
 
     LeafSizeType m_min_cell_size;
+    DepthType m_max_depth;
+    DepthType m_depth;
     NodeCountType m_leaf_count; ///< Number of leaves in the Kdtree (computed during construction)
 };
 
