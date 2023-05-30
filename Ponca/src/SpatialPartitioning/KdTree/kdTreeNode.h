@@ -45,7 +45,8 @@ public:
     typedef Eigen::AlignedBox<Scalar, DataPoint::Dim> AabbType;
 
     AabbType aabb;
-    union {
+    union
+    {
         InnerType inner;
         LeafType  leaf;
     };
