@@ -21,4 +21,4 @@
     (void)(VAR);                                                               \
     PONCA_MACRO_END
 
-#define PONCA_TODO checkf(false, "TODO")
+#define PONCA_TODO checkf(false, TEXT("TODO"))
