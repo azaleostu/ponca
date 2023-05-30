@@ -37,7 +37,7 @@ private:
     typedef typename DataPoint::VectorType VectorType;
 
 public:
-    typedef Eigen::AlignedBox<Scalar, DataPoint::Dim> Aabb;
+    typedef Eigen::AlignedBox<Scalar, DataPoint::Dim> AabbType;
 
     typedef int DimType;
     typedef int DepthType;
@@ -46,7 +46,7 @@ public:
     typedef std::vector<DataPoint> PointContainer;
     typedef std::vector<int>       IndexContainer;
 
-    typedef std::vector<DefaultKdTreeNode<DataPoint, Aabb>> NodeContainer;
+    typedef std::vector<DefaultKdTreeNode<DataPoint, AabbType>> NodeContainer;
 
     static void max_dim(const VectorType& vec, Scalar& scalar)
     {
@@ -66,6 +66,8 @@ public:
     typedef          _DataPoint            DataPoint;
     typedef typename DataPoint::Scalar     Scalar; // Scalar given by user
     typedef typename DataPoint::VectorType VectorType; // VectorType given by user
+
+    typedef typename Adapter::AabbType AabbType;
 
     typedef typename Adapter::DimType   DimType;
     typedef typename Adapter::DepthType DepthType;

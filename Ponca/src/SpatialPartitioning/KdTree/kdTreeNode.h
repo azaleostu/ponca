@@ -29,7 +29,7 @@ struct DefaultKdTreeLeafNode
     SizeType     size;
 };
 
-template<typename DataPoint, typename Aabb>
+template<typename DataPoint, typename AabbType>
 struct DefaultKdTreeNode
 {
 private:
@@ -41,7 +41,7 @@ private:
 public:
     typedef typename LeafType::SizeType LeafSizeType;
 
-    Aabb aabb;
+    AabbType aabb;
     union
     {
         InnerType inner;
