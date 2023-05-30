@@ -127,7 +127,7 @@ public:
     struct DefaultConverter{
         template <typename Input>
         inline void operator()( Input&& i, PointContainer & o ) {
-            typedef InputContainer = typename std::remove_cv<typename std::remove_reference<Input>::type>::type;
+            typedef typename std::remove_cv<typename std::remove_reference<Input>::type>::type InputContainer;
             if constexpr ( std::is_same<InputContainer, PointContainer>::value )
                 o = i;
             else
