@@ -11,7 +11,10 @@
 #include <memory>
 #include <numeric>
 #include <type_traits>
+#include <utility>
 #include <vector>
+
+#include <Eigen/Geometry> // aabb
 
 #include "../../Common/Assert.h"
 
@@ -29,6 +32,13 @@ namespace Ponca {
 template <typename DataPoint>
 struct DefaultKdTreeAdapter
 {
+private:
+    typedef typename DataPoint::Scalar     Scalar;
+    typedef typename DataPoint::VectorType VectorType;
+
+public:
+    typedef Eigen::AlignedBox<Scalar, DataPoint::Dim> Aabb;
+
     typedef int DimType;
     typedef int DepthType;
 
@@ -36,7 +46,12 @@ struct DefaultKdTreeAdapter
     typedef std::vector<DataPoint> PointContainer;
     typedef std::vector<int>       IndexContainer;
 
-    typedef std::vector<DefaultKdTreeNode<DataPoint>> NodeContainer;
+    typedef std::vector<DefaultKdTreeNode<DataPoint, Aabb>> NodeContainer;
+
+    static void max_dim(const VectorType& vec, Scalar& scalar)
+    {
+        vec.maxCoeff(scalar);
+    }
 };
 
 ///
@@ -80,7 +95,7 @@ public:
     };
 
     template<typename PointUserContainer>
-    inline KdTree(const PointUserContainer& points): // PointUserContainer => Given by user, transformed to PointContainer
+    inline KdTree(PointUserContainer&& points): // PointUserContainer => Given by user, transformed to PointContainer
         m_points(PointContainer()),
         m_nodes(NodeContainer()),
         m_indices(IndexContainer()),
@@ -88,12 +103,12 @@ public:
         m_max_depth(PCA_KDTREE_MAX_DEPTH),
         m_leaf_count(0)
     {
-        this->build(points);
+        this->build(std::forward<PointUserContainer>(points));
     };
 
     template<typename PointUserContainer, typename IndexUserContainer>
-    inline KdTree(const PointUserContainer& points, const IndexUserContainer& sampling): // PointUserContainer => Given by user, transformed to PointContainer
-                                                                                         // IndexUserContainer => Given by user, transformed to IndexContainer
+    inline KdTree(PointUserContainer&& points, IndexUserContainer sampling): // PointUserContainer => Given by user, transformed to PointContainer
+                                                                             // IndexUserContainer => Given by user, transformed to IndexContainer
         m_points(),
         m_nodes(),
         m_indices(),
@@ -101,19 +116,20 @@ public:
         m_max_depth(PCA_KDTREE_MAX_DEPTH),
         m_leaf_count(0)
     {
-        buildWithSampling(points, sampling);
+        buildWithSampling(std::forward<PointUserContainer>(points), std::move(sampling));
     };
 
     inline void clear();
 
     struct DefaultConverter{
         template <typename Input>
-        inline void operator()( const Input& i, PointContainer & o ) {
-            if constexpr ( std::is_same<Input, PointContainer>::value )
+        inline void operator()( Input&& i, PointContainer & o ) {
+            typedef InputContainer = typename std::remove_cv<typename std::remove_reference<Input>::type>::type;
+            if constexpr ( std::is_same<InputContainer, PointContainer>::value )
                 o = i;
             else
                 std::transform(i.cbegin(), i.cend(), std::back_inserter(o),
-                               [](const typename Input::value_type &p) -> DataPoint { return DataPoint(p); });
+                               [](const typename InputContainer::value_type &p) -> DataPoint { return DataPoint(p); });
         }
     };
 
@@ -121,23 +137,29 @@ public:
     /// \tparam PointUserContainer Input point container, transformed to PointContainer
     /// \param points Input points
     template<typename PointUserContainer>
-    inline void build(const PointUserContainer& points) { build(points, DefaultConverter()); }
+    inline void build(PointUserContainer&& points)
+    {
+        build(std::forward<PointUserContainer>(points), DefaultConverter());
+    }
+
     ///
     /// \tparam PointUserContainer Input point container, transformed to PointContainer
     /// \tparam IndexUserContainer Input sampling container, transformed to IndexContainer
     /// \param points Input points
     /// \param c Cast/Convert input point type to DataType
     template<typename PointUserContainer, typename Converter>
-    inline void build(const PointUserContainer& points, Converter c);
+    inline void build(PointUserContainer&& points, Converter c);
 
     /// \tparam PointUserContainer Input point, transformed to PointContainer
     /// \tparam IndexUserContainer Input sampling, transformed to IndexContainer
     /// \param points Input points
     /// \param sampling Indices of points used in the tree
     template<typename PointUserContainer, typename IndexUserContainer>
-    inline void buildWithSampling(const PointUserContainer& points,
-                                  const IndexUserContainer& sampling)
-                                  { buildWithSampling(points, sampling, DefaultConverter());}
+    inline void buildWithSampling(PointUserContainer&& points,
+                                  IndexUserContainer sampling)
+    {
+        buildWithSampling(std::forward<PointUserContainer>(points), std::move(sampling), DefaultConverter());
+    }
 
     /// \tparam PointUserContainer Input point, transformed to PointContainer
     /// \tparam IndexUserContainer Input sampling, transformed to IndexContainer
@@ -146,13 +168,13 @@ public:
     /// \param sampling Indices of points used in the tree
     /// \param c Cast/Convert input point type to DataType
     template<typename PointUserContainer, typename IndexUserContainer, typename Converter>
-    inline void buildWithSampling(const PointUserContainer& points,
-                                  const IndexUserContainer& sampling,
+    inline void buildWithSampling(PointUserContainer&& points,
+                                  IndexUserContainer sampling,
                                   Converter c);
 
 
     template<typename IndexUserContainer>
-    inline void rebuild(const IndexUserContainer& sampling); // IndexUserContainer => Given by user, transformed to IndexContainer
+    inline void rebuild(IndexUserContainer sampling); // IndexUserContainer => Given by user, transformed to IndexContainer
 
 
     inline bool valid() const;

@@ -17,29 +17,29 @@ void KdTree<DataPoint, Adapter>::clear()
 
 template<class DataPoint, class Adapter>
 template<typename PointUserContainer, typename Converter>
-inline void KdTree<DataPoint, Adapter>::build(const PointUserContainer& points, Converter c)
+inline void KdTree<DataPoint, Adapter>::build(PointUserContainer&& points, Converter c)
 {
     IndexContainer ids(points.size());
     std::iota(ids.begin(), ids.end(), 0);
-    this->buildWithSampling(points, std::move(ids), c);
+    this->buildWithSampling(std::forward<PointUserContainer>(points), std::move(ids), std::move(c));
 }
 
 template<class DataPoint, class Adapter>
 template<typename PointUserContainer, typename IndexUserContainer, typename Converter>
-inline void KdTree<DataPoint, Adapter>::buildWithSampling(const PointUserContainer& points,
-                                                          const IndexUserContainer& sampling,
+inline void KdTree<DataPoint, Adapter>::buildWithSampling(PointUserContainer&& points,
+                                                          IndexUserContainer sampling,
                                                           Converter c)
 {
     this->clear();
 
     // Copy or convert input samples
-    c( points, m_points );
+    c(std::forward<PointUserContainer>(points), m_points);
 
     m_nodes = NodeContainer();
     m_nodes.reserve(4 * point_count() / m_min_cell_size);
     m_nodes.emplace_back();
 
-    m_indices = IndexContainer(sampling);//move operator ou std copy
+    m_indices = std::move(sampling);
 
     this->build_rec(0, 0, index_count(), 1);
 
@@ -48,14 +48,14 @@ inline void KdTree<DataPoint, Adapter>::buildWithSampling(const PointUserContain
 
 template<class DataPoint, class Adapter>
 template<typename IndexUserContainer>
-inline void KdTree<DataPoint, Adapter>::rebuild(const IndexUserContainer & sampling)
+inline void KdTree<DataPoint, Adapter>::rebuild(IndexUserContainer sampling)
 {
     PONCA_DEBUG_ASSERT(sampling.size() <= m_points->size());
 
     m_nodes.clear();
     m_nodes.emplace_back();
 
-    m_indices = sampling;
+    m_indices = std::move(sampling);
 
     this->build_rec(0, 0, index_count(), 1);
 
@@ -174,13 +174,10 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
 
         DimType dim;
         if constexpr (std::is_floating_point<Scalar>::value)
-        {
-            (Scalar(0.5) * (node.aabb.max() - node.aabb.min())).maxCoeff(&dim);
-        }
+            Adapter::max_dim(Scalar(0.5) * (node.aabb.max() - node.aabb.min()), dim);
         else
-        {
-            ((node.aabb.max() - node.aabb.min()) / Scalar(2.0)).maxCoeff(&dim);
-        }
+            Adapter::max_dim((node.aabb.max() - node.aabb.min()) / Scalar(2), dim);
+
         node.inner.dim = dim;
         node.inner.split_value = node.aabb.center()(dim);
 
