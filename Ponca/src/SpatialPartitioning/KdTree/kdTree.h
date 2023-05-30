@@ -48,7 +48,14 @@ public:
 
     typedef std::vector<DefaultKdTreeNode<DataPoint, AabbType>> NodeContainer;
 
-    static void max_dim(const VectorType& vec, Scalar& scalar)
+    static DimType max_dim(const VectorType& vec)
+    {
+        DimType dim;
+        vec.maxCoeff(dim);
+        return dim;
+    }
+
+    static Scalar vec_component(const VectorType& vec, DimType dim)
     {
         vec.maxCoeff(scalar);
     }
@@ -251,6 +258,7 @@ public:
 
     inline void set_min_cell_size(LeafSizeType min_cell_size)
     {
+        PONCA_DEBUG_ASSERT(min_cell_size > 0);
         m_min_cell_size = min_cell_size;
     }
 
@@ -261,7 +269,7 @@ public:
 
     inline void set_max_depth(DepthType max_depth)
     {
-        PONCA_DEBUG_ASSERT(max_depth <= PCA_KDTREE_MAX_DEPTH);
+        PONCA_DEBUG_ASSERT(0 < max_depth && max_depth <= PCA_KDTREE_MAX_DEPTH);
         m_max_depth = max_depth;
     }
 
