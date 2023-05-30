@@ -46,7 +46,7 @@ public:
 
     AabbType aabb;
     union
-	{
+    {
         InnerType inner;
         LeafType  leaf;
     };

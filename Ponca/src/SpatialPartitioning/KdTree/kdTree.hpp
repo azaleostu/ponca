@@ -173,14 +173,14 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
         node.set_is_leaf(false);
 
         DimType dim;
-		if constexpr (std::is_floating_point<Scalar>::value)
-		{
-			(Scalar(0.5) * (node.aabb.max() - node.aabb.min())).maxCoeff(&dim);
-		}
-		else
-		{
-			((node.aabb.max() - node.aabb.min()) / Scalar(2.0)).maxCoeff(&dim);
-		}
+        if constexpr (std::is_floating_point<Scalar>::value)
+        {
+            (Scalar(0.5) * (node.aabb.max() - node.aabb.min())).maxCoeff(&dim);
+        }
+        else
+        {
+            ((node.aabb.max() - node.aabb.min()) / Scalar(2.0)).maxCoeff(&dim);
+        }
         node.inner.dim = dim;
         node.inner.split_value = node.aabb.center()(dim);
 
@@ -196,7 +196,7 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
 
 template<class DataPoint, class Adapter>
 auto KdTree<DataPoint, Adapter>::partition(IndexCountType start, IndexCountType end, DimType dim, Scalar value)
-	-> IndexCountType
+    -> IndexCountType
 {
     const auto& points = m_points;
     auto& indices  = m_indices;
