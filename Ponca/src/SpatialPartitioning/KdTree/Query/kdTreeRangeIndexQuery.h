@@ -20,7 +20,7 @@ public:
     using IndexType       = typename Adapter::IndexType;
     using Scalar          = typename DataPoint::Scalar;
     using VectorType      = typename DataPoint::VectorType;
-    using QueryType       = RangeIndexQuery<typename DataPoint::Scalar>;
+    using QueryType       = RangeIndexQuery<IndexType, typename DataPoint::Scalar>;
     using QueryAccelType  = KdTreeQuery<DataPoint, Adapter>;
     using Iterator        = KdTreeRangeIterator<IndexType, DataPoint, KdTreeRangeIndexQuery>;
 
