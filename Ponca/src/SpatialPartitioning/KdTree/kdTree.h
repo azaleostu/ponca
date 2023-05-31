@@ -34,8 +34,6 @@ private:
     typedef typename DataPoint::VectorType VectorType;
 
 public:
-    typedef Eigen::AlignedBox<Scalar, DataPoint::Dim> AabbType;
-
     typedef int IndexType;
     typedef int DimType;
     typedef int DepthType;
