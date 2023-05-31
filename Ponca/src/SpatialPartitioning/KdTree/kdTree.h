@@ -269,12 +269,12 @@ public:
 
     // Query -------------------------------------------------------------------
 public :
-    KdTreeKNearestPointQuery<DataPoint, Adapter> k_nearest_neighbors(const VectorType& point, QueryIndexType k) const
+    KdTreeKNearestPointQuery<DataPoint, Adapter> k_nearest_neighbors(const VectorType& point, IndexType k) const
     {
         return KdTreeKNearestPointQuery<DataPoint, Adapter>(this, k, point);
     }
 
-    KdTreeKNearestIndexQuery<DataPoint, Adapter> k_nearest_neighbors(QueryIndexType index, QueryIndexType k) const
+    KdTreeKNearestIndexQuery<DataPoint, Adapter> k_nearest_neighbors(IndexType index, IndexType k) const
     {
         return KdTreeKNearestIndexQuery<DataPoint, Adapter>(this, k, index);
     }
@@ -284,7 +284,7 @@ public :
         return KdTreeNearestPointQuery<DataPoint, Adapter>(this, point);
     }
 
-    KdTreeNearestIndexQuery<DataPoint, Adapter> nearest_neighbor(QueryIndexType index) const
+    KdTreeNearestIndexQuery<DataPoint, Adapter> nearest_neighbor(IndexType index) const
     {
         return KdTreeNearestIndexQuery<DataPoint, Adapter>(this, index);
     }
@@ -294,7 +294,7 @@ public :
         return KdTreeRangePointQuery<DataPoint, Adapter>(this, r, point);
     }
 
-    KdTreeRangeIndexQuery<DataPoint, Adapter> range_neighbors(QueryIndexType index, Scalar r) const
+    KdTreeRangeIndexQuery<DataPoint, Adapter> range_neighbors(IndexType index, Scalar r) const
     {
         return KdTreeRangeIndexQuery<DataPoint, Adapter>(this, r, index);
     }
