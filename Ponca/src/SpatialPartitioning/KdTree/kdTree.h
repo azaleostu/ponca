@@ -45,7 +45,7 @@ public:
     typedef std::vector<DataPoint> PointContainer;
     typedef std::vector<int>       IndexContainer;
 
-    typedef std::vector<KdTreeNode<DataPoint>> NodeContainer;
+    typedef std::vector<DefaultKdTreeNode<DataPoint>> NodeContainer;
 
 public:
     static DimType max_dim(const VectorType& vec)
