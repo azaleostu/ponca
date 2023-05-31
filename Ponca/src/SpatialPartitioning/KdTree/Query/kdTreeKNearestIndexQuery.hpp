@@ -54,13 +54,13 @@ void KdTreeKNearestIndexQuery<DataPoint, Adapter>::search()
                 QueryAccelType::m_stack.push();
                 if(newOff < 0)
                 {
-                    QueryAccelType::m_stack.top().index = node.first_child_id;
-                    qnode.index         = node.first_child_id+1;
+                    QueryAccelType::m_stack.top().index = node.inner.first_child_id;
+                    qnode.index         = node.inner.first_child_id+1;
                 }
                 else
                 {
-                    QueryAccelType::m_stack.top().index = node.first_child_id+1;
-                    qnode.index         = node.first_child_id;
+                    QueryAccelType::m_stack.top().index = node.inner.first_child_id+1;
+                    qnode.index         = node.inner.first_child_id;
                 }
                 QueryAccelType::m_stack.top().squared_distance = qnode.squared_distance;
                 qnode.squared_distance         = newOff*newOff;

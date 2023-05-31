@@ -57,7 +57,7 @@ public:
     static DimType max_dim(const VectorType& vec)
     {
         DimType dim;
-        vec.maxCoeff(dim);
+        vec.maxCoeff(&dim);
         return dim;
     }
 
