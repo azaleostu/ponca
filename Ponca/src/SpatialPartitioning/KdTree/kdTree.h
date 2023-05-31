@@ -14,8 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include <Eigen/Geometry> // aabb
-
 #include "../../Common/Assert.h"
 
 #include "Query/kdTreeNearestPointQuery.h"
@@ -36,8 +34,6 @@ private:
     typedef typename DataPoint::VectorType VectorType;
 
 public:
-    typedef Eigen::AlignedBox<Scalar, DataPoint::Dim> AabbType;
-
     typedef int DimType;
     typedef int DepthType;
 
@@ -74,8 +70,6 @@ public:
     typedef typename DataPoint::Scalar     Scalar; // Scalar given by user
     typedef typename DataPoint::VectorType VectorType; // VectorType given by user
 
-    typedef typename Adapter::AabbType AabbType;
-
     typedef typename Adapter::DimType   DimType;
     typedef typename Adapter::DepthType DepthType;
 
@@ -89,6 +83,7 @@ public:
     typedef typename IndexContainer::size_type  IndexCountType;
     typedef typename NodeContainer::size_type   NodeCountType;
 
+    typedef typename NodeType::AabbType     AabbType;
     typedef typename NodeType::LeafSizeType LeafSizeType;
 
     static_assert(std::is_same<typename PointContainer::value_type, DataPoint>::value, "Point container must contain DataPoints");

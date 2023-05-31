@@ -159,9 +159,8 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
         m_depth = level;
 
     NodeType& node = m_nodes[node_id];
-    AabbType aabb;
     for(IndexCountType i=start; i<end; ++i)
-        aabb.extend(m_points[m_indices[i]].pos());
+        node.aabb.extend(m_points[m_indices[i]].pos());
 
     if (end-start <= m_min_cell_size || level == m_max_depth)
     {
@@ -175,9 +174,9 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
     {
         node.set_is_leaf(false);
 
-        DimType dim = Adapter::max_dim(Scalar(0.5) * (aabb.max() - aabb.min()));
+        DimType dim = Adapter::max_dim(Scalar(0.5) * (node.aabb.max() - node.aabb.min()));
         node.inner.dim = dim;
-        node.inner.split_value = Adapter::vec_component(aabb.center(), dim);
+        node.inner.split_value = Adapter::vec_component(node.aabb.center(), dim);
 
         IndexCountType mid_id = this->partition(start, end, dim, node.inner.split_value);
         node.inner.first_child_id = m_nodes.size();
