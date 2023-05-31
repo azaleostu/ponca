@@ -38,16 +38,22 @@ private:
 public:
     typedef Eigen::AlignedBox<Scalar, DataPoint::Dim> AabbType;
 
+    typedef int IndexType;
     typedef int DimType;
     typedef int DepthType;
 
     // Containers
     typedef std::vector<DataPoint> PointContainer;
-    typedef std::vector<int>       IndexContainer;
+    typedef std::vector<IndexType> IndexContainer;
 
     typedef std::vector<DefaultKdTreeNode<DataPoint>> NodeContainer;
 
 public:
+    static Scalar squared_norm(const VectorType& vec)
+    {
+        return vec.squaredNorm();
+    }
+
     static DimType max_dim(const VectorType& vec)
     {
         DimType dim;
@@ -76,6 +82,7 @@ public:
 
     typedef typename Adapter::AabbType AabbType;
 
+    typedef typename Adapter::IndexType IndexType;
     typedef typename Adapter::DimType   DimType;
     typedef typename Adapter::DepthType DepthType;
 
@@ -83,16 +90,18 @@ public:
     typedef typename Adapter::IndexContainer IndexContainer; // Container for indices used inside the KdTree
     typedef typename Adapter::NodeContainer  NodeContainer; // Container for nodes used inside the KdTree
 
-    typedef typename IndexContainer::value_type IndexType;
-    typedef typename NodeContainer::value_type  NodeType;
-    typedef typename PointContainer::size_type  PointCountType;
-    typedef typename IndexContainer::size_type  IndexCountType;
-    typedef typename NodeContainer::size_type   NodeCountType;
+    typedef typename NodeContainer::value_type NodeType;
+    typedef typename PointContainer::size_type PointCountType;
+    typedef typename IndexContainer::size_type IndexCountType;
+    typedef typename NodeContainer::size_type  NodeCountType;
 
     typedef typename NodeType::LeafSizeType LeafSizeType;
 
     static_assert(std::is_same<typename PointContainer::value_type, DataPoint>::value,
         "PointContainer must contain DataPoints");
+    
+    static_assert(std::is_signed<IndexType>::value, "Index type must be signed");
+    static_assert(std::is_same<typename IndexContainer::value_type, IndexType>::value, "Index type mismatch");
 
     inline KdTree():
         m_points(PointContainer()),
@@ -260,12 +269,12 @@ public:
 
     // Query -------------------------------------------------------------------
 public :
-    KdTreeKNearestPointQuery<DataPoint, Adapter> k_nearest_neighbors(const VectorType& point, int k) const
+    KdTreeKNearestPointQuery<DataPoint, Adapter> k_nearest_neighbors(const VectorType& point, QueryIndexType k) const
     {
         return KdTreeKNearestPointQuery<DataPoint, Adapter>(this, k, point);
     }
 
-    KdTreeKNearestIndexQuery<DataPoint, Adapter> k_nearest_neighbors(int index, int k) const
+    KdTreeKNearestIndexQuery<DataPoint, Adapter> k_nearest_neighbors(QueryIndexType index, QueryIndexType k) const
     {
         return KdTreeKNearestIndexQuery<DataPoint, Adapter>(this, k, index);
     }
@@ -275,7 +284,7 @@ public :
         return KdTreeNearestPointQuery<DataPoint, Adapter>(this, point);
     }
 
-    KdTreeNearestIndexQuery<DataPoint, Adapter> nearest_neighbor(int index) const
+    KdTreeNearestIndexQuery<DataPoint, Adapter> nearest_neighbor(QueryIndexType index) const
     {
         return KdTreeNearestIndexQuery<DataPoint, Adapter>(this, index);
     }
@@ -285,7 +294,7 @@ public :
         return KdTreeRangePointQuery<DataPoint, Adapter>(this, r, point);
     }
 
-    KdTreeRangeIndexQuery<DataPoint, Adapter> range_neighbors(int index, Scalar r) const
+    KdTreeRangeIndexQuery<DataPoint, Adapter> range_neighbors(QueryIndexType index, Scalar r) const
     {
         return KdTreeRangeIndexQuery<DataPoint, Adapter>(this, r, index);
     }
