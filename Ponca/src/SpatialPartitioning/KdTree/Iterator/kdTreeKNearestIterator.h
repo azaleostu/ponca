@@ -8,19 +8,19 @@
 
 namespace Ponca {
 
-template <class DataPoint>
+template <typename Index, typename DataPoint>
 class KdTreeKNearestIterator
 {
 public:
     using Scalar   = typename DataPoint::Scalar;
-    using Iterator = typename limited_priority_queue<IndexSquaredDistance<Scalar>>::iterator;
+    using Iterator = typename limited_priority_queue<IndexSquaredDistance<Index, Scalar>>::iterator;
 
     inline KdTreeKNearestIterator() = default;
     inline KdTreeKNearestIterator(const Iterator& iterator) : m_iterator(iterator) {}
     virtual inline ~KdTreeKNearestIterator() = default;
 
 public:
-    inline bool operator !=(const KdTreeKNearestIterator<DataPoint>& other) const
+    inline bool operator !=(const KdTreeKNearestIterator<Index, DataPoint>& other) const
     {return m_iterator != other.m_iterator;}
     inline void operator ++() {++m_iterator;}
     inline int  operator * () const {return m_iterator->index;}
