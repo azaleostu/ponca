@@ -18,23 +18,23 @@ void KdTree<DataPoint, Adapter>::clear()
 
 template<class DataPoint, class Adapter>
 template<typename PointUserContainer, typename Converter>
-inline void KdTree<DataPoint, Adapter>::build(PointUserContainer&& points, Converter c)
+inline void KdTree<DataPoint, Adapter>::build(PointUserContainer points, Converter c)
 {
     IndexContainer ids(points.size());
     std::iota(ids.begin(), ids.end(), 0);
-    this->buildWithSampling(std::forward<PointUserContainer>(points), std::move(ids), std::move(c));
+    this->buildWithSampling(std::move(points), std::move(ids), std::move(c));
 }
 
 template<class DataPoint, class Adapter>
 template<typename PointUserContainer, typename IndexUserContainer, typename Converter>
-inline void KdTree<DataPoint, Adapter>::buildWithSampling(PointUserContainer&& points,
+inline void KdTree<DataPoint, Adapter>::buildWithSampling(PointUserContainer points,
                                                           IndexUserContainer sampling,
                                                           Converter c)
 {
     this->clear();
 
     // Copy or convert input samples
-    c(std::forward<PointUserContainer>(points), m_points);
+    c(std::move(points), m_points);
 
     m_nodes = NodeContainer();
     m_nodes.reserve(4 * point_count() / m_min_cell_size);
@@ -178,12 +178,7 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
     {
         node.set_is_leaf(false);
 
-        DimType dim;
-        if constexpr (std::is_floating_point<Scalar>::value)
-            dim = Adapter::max_dim(Scalar(0.5) * (node.aabb.max() - node.aabb.min()));
-        else
-            dim = Adapter::max_dim((node.aabb.max() - node.aabb.min()) / Scalar(2));
-
+        DimType dim = Adapter::max_dim(Scalar(0.5) * (node.aabb.max() - node.aabb.min()));
         node.inner.dim = dim;
         node.inner.split_value = Adapter::vec_component(node.aabb.center(), dim);
 

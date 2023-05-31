@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <Eigen/Geometry> // aabb
+
 namespace Ponca {
 template<typename Scalar>
 struct DefaultKdTreeInnerNode
@@ -13,11 +15,6 @@ struct DefaultKdTreeInnerNode
     Scalar split_value;
     unsigned int first_child_id:24;
     unsigned int dim:2;
-
-private:
-    template <typename DataPoint>
-    friend struct KdTreeNode;
-
     unsigned int leaf:1;
 };
 
@@ -29,7 +26,7 @@ struct DefaultKdTreeLeafNode
     SizeType     size;
 };
 
-template<typename DataPoint, typename AabbType>
+template<typename DataPoint>
 struct DefaultKdTreeNode
 {
 private:
@@ -39,7 +36,8 @@ private:
     typedef DefaultKdTreeLeafNode          LeafType;
 
 public:
-    typedef typename LeafType::SizeType LeafSizeType;
+    typedef Eigen::AlignedBox<Scalar, DataPoint::Dim> AabbType;
+    typedef typename LeafType::SizeType               LeafSizeType;
 
     AabbType aabb;
     union
