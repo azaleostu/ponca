@@ -29,11 +29,6 @@ namespace Ponca {
 template <typename DataPoint>
 struct DefaultKdTreeAdapter
 {
-private:
-    typedef typename DataPoint::Scalar     Scalar;
-    typedef typename DataPoint::VectorType VectorType;
-
-public:
     typedef int DimType;
     typedef int DepthType;
 
@@ -42,6 +37,9 @@ public:
     typedef std::vector<int>       IndexContainer;
 
     typedef std::vector<KdTreeNode<DataPoint>> NodeContainer;
+
+private:
+    typedef typename DataPoint::VectorType VectorType;
 
 public:
     static DimType max_dim(const VectorType& vec)
