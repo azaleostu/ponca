@@ -166,7 +166,7 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
     for(IndexCountType i=start; i<end; ++i)
         node.aabb.extend(m_points[m_indices[i]].pos());
 
-    if (end-start <= m_min_cell_size || level == m_max_depth)
+    if (end-start <= m_min_cell_size || level >= m_max_depth)
     {
         node.set_is_leaf(true);
 
