@@ -36,9 +36,10 @@ struct DefaultKdTreeAdapter
     typedef std::vector<DataPoint> PointContainer;
     typedef std::vector<int>       IndexContainer;
 
-    typedef std::vector<KdTreeNode<DataPoint>> NodeContainer;
+    typedef std::vector<DefaultKdTreeNode<DataPoint>> NodeContainer;
 
 private:
+    typedef typename DataPoint::Scalar     Scalar;
     typedef typename DataPoint::VectorType VectorType;
 
 public:
