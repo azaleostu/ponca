@@ -78,8 +78,6 @@ public:
     typedef typename DataPoint::Scalar     Scalar; // Scalar given by user
     typedef typename DataPoint::VectorType VectorType; // VectorType given by user
 
-    typedef typename Adapter::AabbType AabbType;
-
     typedef typename Adapter::IndexType IndexType;
     typedef typename Adapter::DimType   DimType;
     typedef typename Adapter::DepthType DepthType;
