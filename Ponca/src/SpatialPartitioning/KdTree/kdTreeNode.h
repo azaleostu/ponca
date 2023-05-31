@@ -12,7 +12,7 @@ namespace Ponca {
 template<typename Scalar>
 struct DefaultKdTreeInnerNode
 {
-    Scalar split_value;
+    Scalar       split_value;
     unsigned int first_child_id:24;
     unsigned int dim:2;
     unsigned int leaf:1;
