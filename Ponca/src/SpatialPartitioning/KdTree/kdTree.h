@@ -85,7 +85,8 @@ public:
     typedef typename NodeType::AabbType     AabbType;
     typedef typename NodeType::LeafSizeType LeafSizeType;
 
-    static_assert(std::is_same<typename PointContainer::value_type, DataPoint>::value, "Point container must contain DataPoints");
+    static_assert(std::is_same<typename PointContainer::value_type, DataPoint>::value,
+        "PointContainer must contain DataPoints");
 
     inline KdTree():
         m_points(PointContainer()),
@@ -127,10 +128,12 @@ public:
 
     inline void clear();
 
-    struct DefaultConverter{
+    struct DefaultConverter
+    {
         template <typename Input>
-        inline void operator()( Input i, PointContainer & o ) {
-            if constexpr ( std::is_same<Input, PointContainer>::value )
+        inline void operator()(Input i, PointContainer& o)
+        {
+            if constexpr (std::is_same<Input, PointContainer>::value)
                 o = std::move(i);
             else
                 std::transform(i.cbegin(), i.cend(), std::back_inserter(o),
