@@ -20,7 +20,7 @@ public:
     virtual inline ~KdTreeKNearestIterator() = default;
 
 public:
-    inline bool operator !=(const KdTreeKNearestIterator<Index, DataPoint>& other) const
+    inline bool operator !=(const KdTreeKNearestIterator& other) const
     {return m_iterator != other.m_iterator;}
     inline void operator ++() {++m_iterator;}
     inline int  operator * () const {return m_iterator->index;}
