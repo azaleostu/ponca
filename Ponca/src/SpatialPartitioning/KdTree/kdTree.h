@@ -46,10 +46,6 @@ public:
 
     typedef std::vector<DefaultKdTreeNode<DataPoint>> NodeContainer;
 
-private:
-    typedef typename DataPoint::Scalar     Scalar;
-    typedef typename DataPoint::VectorType VectorType;
-
 public:
     static Scalar squared_norm(const VectorType& vec)
     {
