@@ -97,6 +97,7 @@ public:
     static_assert(std::is_same<typename PointContainer::value_type, DataPoint>::value,
         "PointContainer must contain DataPoints");
     
+    // Queries use a value of -1 for invalid indices
     static_assert(std::is_signed<IndexType>::value, "Index type must be signed");
     static_assert(std::is_same<typename IndexContainer::value_type, IndexType>::value, "Index type mismatch");
 
