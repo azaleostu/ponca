@@ -91,8 +91,6 @@ public:
     typedef typename Adapter::NodeContainer  NodeContainer; // Container for nodes used inside the KdTree
 
     typedef typename NodeContainer::value_type NodeType;
-    typedef typename PointContainer::size_type PointCountType;
-    typedef typename IndexContainer::size_type IndexCountType;
     typedef typename NodeContainer::size_type  NodeCountType;
 
     typedef typename NodeType::LeafSizeType LeafSizeType;
@@ -205,14 +203,14 @@ public:
         return m_nodes.size();
     }
 
-    inline IndexCountType index_count() const
+    inline IndexType index_count() const
     {
-        return m_indices.size();
+        return (IndexType)m_indices.size();
     }
 
-    inline PointCountType point_count() const
+    inline IndexType point_count() const
     {
-        return m_points.size();
+        return (IndexType)m_points.size();
     }
 
     inline NodeCountType leaf_count() const
@@ -265,8 +263,8 @@ public:
 
     // Internal ----------------------------------------------------------------
 public:
-    inline void build_rec(NodeCountType node_id, IndexCountType start, IndexCountType end, DepthType level);
-    inline IndexCountType partition(IndexCountType start, IndexCountType end, DimType dim, Scalar value);
+    inline void build_rec(NodeCountType node_id, IndexType start, IndexType end, DepthType level);
+    inline IndexType partition(IndexType start, IndexType end, DimType dim, Scalar value);
 
     // Query -------------------------------------------------------------------
 public :
