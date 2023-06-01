@@ -135,7 +135,7 @@ std::string KdTree<DataPoint, Adapter>::to_string() const
     
     std::stringstream str;
     str << "indices (" << index_count() << ") :\n";
-    for(IndexCountType i=0; i<index_count(); ++i)
+    for(IndexType i=0; i<index_count(); ++i)
     {
         str << "  " << i << ": " << m_indices.operator[](i) << "\n";
     }
@@ -157,13 +157,13 @@ std::string KdTree<DataPoint, Adapter>::to_string() const
 }
 
 template<class DataPoint, class Adapter>
-void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType start, IndexCountType end, DepthType level)
+void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexType start, IndexType end, DepthType level)
 {
     if (level > m_depth)
         m_depth = level;
 
     NodeType& node = m_nodes[node_id];
-    for(IndexCountType i=start; i<end; ++i)
+    for(IndexType i=start; i<end; ++i)
         node.aabb.extend(m_points[m_indices[i]].pos());
 
     if (end-start <= m_min_cell_size || level >= m_max_depth)
@@ -182,7 +182,7 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
         node.inner.dim = dim;
         node.inner.split_value = Adapter::vec_component(node.aabb.center(), dim);
 
-        IndexCountType mid_id = this->partition(start, end, dim, node.inner.split_value);
+        IndexType mid_id = this->partition(start, end, dim, node.inner.split_value);
         node.inner.first_child_id = m_nodes.size();
         m_nodes.emplace_back();
         m_nodes.emplace_back();
@@ -193,8 +193,8 @@ void KdTree<DataPoint, Adapter>::build_rec(NodeCountType node_id, IndexCountType
 }
 
 template<class DataPoint, class Adapter>
-auto KdTree<DataPoint, Adapter>::partition(IndexCountType start, IndexCountType end, DimType dim, Scalar value)
-    -> IndexCountType
+auto KdTree<DataPoint, Adapter>::partition(IndexType start, IndexType end, DimType dim, Scalar value)
+    -> IndexType
 {
     const auto& points = m_points;
     auto& indices  = m_indices;
@@ -206,5 +206,5 @@ auto KdTree<DataPoint, Adapter>::partition(IndexCountType start, IndexCountType 
 
     auto distance = std::distance(m_indices.begin(), it);
     
-    return static_cast<IndexCountType>(distance);
+    return static_cast<IndexType>(distance);
 }
