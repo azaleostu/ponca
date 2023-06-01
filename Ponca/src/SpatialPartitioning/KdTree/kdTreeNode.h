@@ -20,10 +20,8 @@ struct DefaultKdTreeInnerNode
 
 struct DefaultKdTreeLeafNode
 {
-    using SizeType = unsigned short;
-
-    unsigned int start;
-    SizeType     size;
+    unsigned int   start;
+    unsigned short size;
 };
 
 template<typename DataPoint>
@@ -37,7 +35,7 @@ private:
 
 public:
     typedef Eigen::AlignedBox<Scalar, DataPoint::Dim> AabbType;
-    typedef typename LeafType::SizeType               LeafSizeType;
+    typedef unsigned short                            LeafSizeType;
 
     AabbType aabb;
     union

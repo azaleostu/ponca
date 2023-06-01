@@ -23,7 +23,7 @@ public:
     inline bool operator !=(const KdTreeKNearestIterator& other) const
     {return m_iterator != other.m_iterator;}
     inline void operator ++() {++m_iterator;}
-    inline int  operator * () const {return m_iterator->index;}
+    inline Index operator * () const {return m_iterator->index;}
     inline void operator +=(int i) {m_iterator += i;}
 
 protected:
