@@ -295,11 +295,6 @@ public :
 
     // Data --------------------------------------------------------------------
 protected:
-    enum
-    {
-        MAX_POINT_COUNT = 2 << NodeType::InnerType::INDEX_BITS,
-    };
-
     PointContainer m_points;
     NodeContainer m_nodes;
     IndexContainer m_indices;
