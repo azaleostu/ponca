@@ -168,7 +168,7 @@ struct KdTreeDefaultTraits
      * Must provide `Scalar` and `VectorType` typedefs.
      *
      * `VectorType` must provide a `squaredNorm()` function returning a `Scalar`, as well as a
-     * `maxCoeff(int&)` function returning the dimension index of its largest scalar in its output
+     * `maxCoeff(int*)` function returning the dimension index of its largest scalar in its output
      * parameter (e.g. 0 for *x*, 1 for *y*, etc.).
      */
     using DataPoint = _DataPoint;
