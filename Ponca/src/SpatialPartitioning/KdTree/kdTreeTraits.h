@@ -163,13 +163,13 @@ template <typename _DataPoint>
 struct KdTreeDefaultTraits
 {
     /*!
-     * \brief The type used to contain point data.
+     * \brief The type used to store point data.
      *
      * Must provide `Scalar` and `VectorType` typedefs.
      *
-     * `VectorType` must provide a non-static `squaredNorm()` function returning a `Scalar`, as
-     * well as a `maxCoeff(int&)` function returning the dimension index of its largest scalar in
-     * its output parameter (e.g. 0 for *x*, 1 for *y*, etc.).
+     * `VectorType` must provide a `squaredNorm()` function returning a `Scalar`, as well as a
+     * `maxCoeff(int&)` function returning the dimension index of its largest scalar in its output
+     * parameter (e.g. 0 for *x*, 1 for *y*, etc.).
      */
     using DataPoint = _DataPoint;
 
