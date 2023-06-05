@@ -196,7 +196,7 @@ auto KdTreeBase<Traits>::partition(IndexType start, IndexType end, int dim, Scal
     
     auto it = std::partition(indices.begin()+start, indices.begin()+end, [&](IndexType i)
     {
-        return Traits::vec_component(points[i].pos(), dim) < value;
+        return points[i].pos()[dim] < value;
     });
 
     auto distance = std::distance(m_indices.begin(), it);
