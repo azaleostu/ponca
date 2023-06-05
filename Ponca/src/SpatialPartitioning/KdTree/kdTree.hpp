@@ -167,7 +167,7 @@ void KdTreeBase<Traits>::build_rec(NodeCountType node_id, IndexType start, Index
     for(IndexType i=start; i<end; ++i)
         node.aabb.extend(m_points[m_indices[i]].pos());
 
-    node.set_is_leaf(end-start <= m_min_cell_size || level >= Traits::MAX_DEPTH);
+    node.set_is_leaf(end-start <= m_min_cell_size || level >= m_max_depth);
     if (node.is_leaf())
     {
         node.leaf.start = start;
