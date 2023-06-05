@@ -31,7 +31,7 @@ inline void KdTreeBase<Traits>::buildWithSampling(PointUserContainer&& points,
                                                   IndexUserContainer sampling,
                                                   Converter c)
 {
-    PONCA_DEBUG_ASSERT(points.size() < MAX_POINT_COUNT);
+    PONCA_DEBUG_ASSERT(points.size() <= MAX_POINT_COUNT);
     this->clear();
 
     // Move, copy or convert input samples
@@ -176,9 +176,10 @@ void KdTreeBase<Traits>::build_rec(NodeCountType node_id, IndexType start, Index
     }
     else
     {
-        int dim = Traits::max_dim(Scalar(0.5) * (node.aabb.max() - node.aabb.min()));
+        int dim = 0;
+        (Scalar(0.5) * (node.aabb.max() - node.aabb.min())).maxCoeff(&dim);
         node.inner.dim = dim;
-        node.inner.split_value = Traits::vec_component(node.aabb.center(), dim);
+        node.inner.split_value = node.aabb.center()[dim];
 
         IndexType mid_id = this->partition(start, end, dim, node.inner.split_value);
         node.inner.first_child_id = m_nodes.size();
