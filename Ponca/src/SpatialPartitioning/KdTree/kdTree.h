@@ -33,7 +33,7 @@ using KdTree = KdTreeBase<KdTreeDefaultTraits<DataPoint>>;
  * \tparam Traits Traits type providing the types and constants used by the kd-tree. Must have the
  * same interface as the default traits type.
  *
- * \see KdTreeDefaultTraits
+ * \see KdTreeDefaultTraits for the trait interface documentation.
  *
  * \todo Better handle sampling: do not store non-selected points (requires to store original indices)
  */
@@ -54,6 +54,15 @@ public:
     using NodeCountType = typename NodeContainer::size_type;
     using AabbType      = typename NodeType::AabbType;
     using LeafSizeType  = typename NodeType::LeafSizeType;
+
+    enum
+    {
+        /*!
+         * The maximum number of points that can be stored in the kd-tree, considering how many
+         * bits the inner nodes use to store their children indices.
+         */
+        MAX_POINT_COUNT = 2 << NodeType::InnerType::INDEX_BITS,
+    };
 
     static_assert(std::is_same<typename PointContainer::value_type, DataPoint>::value,
         "PointContainer must contain DataPoints");
