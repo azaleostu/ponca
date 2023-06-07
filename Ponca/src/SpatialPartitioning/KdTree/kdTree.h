@@ -53,42 +53,9 @@ template <typename Traits>
 class KdTreeBase
 {
 public:
-    using DataPoint  = typename Traits::DataPoint;
-    using Scalar     = typename DataPoint::Scalar; // Scalar given by user
-    using VectorType = typename DataPoint::VectorType; // VectorType given by user
-
-    using IndexType      = typename Traits::IndexType;
-    using PointContainer = typename Traits::PointContainer; // Container for DataPoint used inside the KdTree
-    using IndexContainer = typename Traits::IndexContainer; // Container for indices used inside the KdTree
-    using NodeContainer  = typename Traits::NodeContainer; // Container for nodes used inside the KdTree
-
-    using NodeType      = typename NodeContainer::value_type;
-    using NodeCountType = typename NodeContainer::size_type;
-    using AabbType      = typename NodeType::AabbType;
-    using LeafSizeType  = typename NodeType::LeafSizeType;
-
-    enum
-    {
-        /*!
-         * The maximum number of points that can be stored in the kd-tree, considering how many
-         * bits the inner nodes use to store their children indices.
-         */
-        MAX_POINT_COUNT = 2 << NodeType::InnerType::INDEX_BITS,
-    };
-
-    static_assert(std::is_same<typename PointContainer::value_type, DataPoint>::value,
-        "PointContainer must contain DataPoints");
-    
-    // Queries use a value of -1 for invalid indices
-    static_assert(std::is_signed<IndexType>::value, "Index type must be signed");
-    static_assert(std::is_same<typename IndexContainer::value_type, IndexType>::value, "Index type mismatch");
-
-    static_assert(Traits::MAX_DEPTH > 0, "Max depth must be strictly positive");
-
     using DataPoint  = typename Traits::DataPoint; ///< DataPoint given by user via Traits
     using Scalar     = typename DataPoint::Scalar; ///< Scalar given by user via DataPoint
     using VectorType = typename DataPoint::VectorType; ///< VectorType given by user via DataPoint
-    using AabbType   = typename Traits::AabbType; ///< Bounding box type given by user via DataPoint
 
     using IndexType      = typename Traits::IndexType;
     using PointContainer = typename Traits::PointContainer; ///< Container for DataPoint used inside the KdTree
@@ -97,6 +64,7 @@ public:
 
     using NodeType      = typename NodeContainer::value_type;
     using NodeCountType = typename NodeContainer::size_type;
+    using AabbType      = typename NodeType::AabbType; ///< Bounding box type given by user via NodeType
     using LeafSizeType  = typename NodeType::LeafSizeType;
 
     enum
@@ -221,10 +189,6 @@ public:
     /// Update sampling of an existing tree
     template<typename IndexUserContainer>
     inline void rebuild(IndexUserContainer sampling); // IndexUserContainer => Given by user, transformed to IndexContainer
-<<<<<<< HEAD
-
-=======
->>>>>>> master
 
     inline bool valid() const;
     inline std::string to_string() const;
