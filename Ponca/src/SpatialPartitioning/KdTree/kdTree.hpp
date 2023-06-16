@@ -163,10 +163,8 @@ std::string KdTreeBase<Traits>::to_string() const
 template<typename Traits>
 bool KdTreeBase<Traits>::build_rec(NodeCountType node_id, IndexType start, IndexType end, int level, IndexType& num_processed_points, ProgressController& progress)
 {
-#if 0
     if (progress.should_continue && !progress.should_continue())
         return false;
-#endif
 
     if (level > m_depth)
         m_depth = level;
