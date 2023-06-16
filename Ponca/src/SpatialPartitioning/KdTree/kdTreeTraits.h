@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <functional>
+
 #include <Eigen/Geometry> // aabb
 
 namespace Ponca {
@@ -156,6 +158,12 @@ struct KdTreeDefaultNode
     void set_is_leaf(bool new_is_leaf) { inner.leaf = new_is_leaf; }
 };
 
+struct KdTreeDefaultProgressController
+{
+    std::function<bool()> should_continue = [] { return true; };
+    std::function<void(float)> callback = [](float) {};
+};
+
 /*!
  * \brief The default traits type used by the kd-tree.
  */
@@ -199,5 +207,7 @@ public:
      * \see KdTreeDefaultNode for the node interface documentation.
      */
     using NodeContainer = std::vector<KdTreeDefaultNode<IndexType, Scalar, DataPoint::Dim>>;
+
+    using ProgressController = KdTreeDefaultProgressController;
 };
 } // namespace Ponca

@@ -67,6 +67,8 @@ public:
     using AabbType      = typename NodeType::AabbType; ///< Bounding box type given by user via NodeType
     using LeafSizeType  = typename NodeType::LeafSizeType;
 
+    using ProgressController = typename Traits::ProgressController;
+
     enum
     {
         /*!
@@ -148,9 +150,9 @@ public:
     /// \tparam PointUserContainer Input point container, transformed to PointContainer
     /// \param points Input points
     template<typename PointUserContainer>
-    inline void build(PointUserContainer&& points)
+    inline bool build(PointUserContainer&& points, ProgressController progress = ProgressController())
     {
-        build(std::forward<PointUserContainer>(points), DefaultConverter());
+        return build(std::forward<PointUserContainer>(points), DefaultConverter(), std::move(progress));
     }
 
     /// Generate a tree from a custom contained type converted using DefaultConverter
@@ -159,7 +161,7 @@ public:
     /// \param points Input points
     /// \param c Cast/Convert input point type to DataType
     template<typename PointUserContainer, typename Converter>
-    inline void build(PointUserContainer&& points, Converter c);
+    inline bool build(PointUserContainer&& points, Converter c, ProgressController progress = ProgressController());
 
     /// Generate a tree sampled from a custom contained type converted using DefaultConverter
     /// \tparam PointUserContainer Input point, transformed to PointContainer
@@ -167,10 +169,11 @@ public:
     /// \param points Input points
     /// \param sampling Indices of points used in the tree
     template<typename PointUserContainer, typename IndexUserContainer>
-    inline void buildWithSampling(PointUserContainer&& points,
-                                  IndexUserContainer sampling)
+    inline bool buildWithSampling(PointUserContainer&& points,
+                                  IndexUserContainer sampling,
+                                  ProgressController progress = ProgressController())
     {
-        buildWithSampling(std::forward<PointUserContainer>(points), std::move(sampling), DefaultConverter());
+        return buildWithSampling(std::forward<PointUserContainer>(points), std::move(sampling), DefaultConverter(), std::move(progress));
     }
 
     /// Generate a tree sampled from a custom contained type converted using DefaultConverter
@@ -181,9 +184,10 @@ public:
     /// \param sampling Indices of points used in the tree
     /// \param c Cast/Convert input point type to DataType
     template<typename PointUserContainer, typename IndexUserContainer, typename Converter>
-    inline void buildWithSampling(PointUserContainer&& points,
+    inline bool buildWithSampling(PointUserContainer&& points,
                                   IndexUserContainer sampling,
-                                  Converter c);
+                                  Converter c,
+                                  ProgressController progress = ProgressController());
 
 
     /// Update sampling of an existing tree
@@ -278,7 +282,7 @@ public:
 
     // Internal ----------------------------------------------------------------
 public:
-    inline void build_rec(NodeCountType node_id, IndexType start, IndexType end, int level);
+    inline void build_rec(NodeCountType node_id, IndexType start, IndexType end, int level, IndexType& num_processed_points, ProgressController& progress);
     inline IndexType partition(IndexType start, IndexType end, int dim, Scalar value);
 
     // Query -------------------------------------------------------------------
