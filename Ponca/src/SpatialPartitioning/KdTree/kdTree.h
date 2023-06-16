@@ -282,7 +282,7 @@ public:
 
     // Internal ----------------------------------------------------------------
 public:
-    inline void build_rec(NodeCountType node_id, IndexType start, IndexType end, int level, IndexType& num_processed_points, ProgressController& progress);
+    inline bool build_rec(NodeCountType node_id, IndexType start, IndexType end, int level, IndexType& num_processed_points, ProgressController& progress);
     inline IndexType partition(IndexType start, IndexType end, int dim, Scalar value);
 
     // Query -------------------------------------------------------------------
