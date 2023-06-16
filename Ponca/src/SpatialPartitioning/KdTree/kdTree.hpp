@@ -197,9 +197,9 @@ bool KdTreeBase<Traits>::build_rec(NodeCountType node_id, IndexType start, Index
         m_nodes.emplace_back();
         m_nodes.emplace_back();
 
-        bool result = build_rec(node.inner.first_child_id, start, mid_id, level+1, num_processed_points, progress);
-        result = result && build_rec(node.inner.first_child_id+1, start, mid_id, level+1, num_processed_points, progress);
-        return result;
+        return
+            build_rec(node.inner.first_child_id, start, mid_id, level+1, num_processed_points, progress) &&
+            build_rec(node.inner.first_child_id+1, start, mid_id, level+1, num_processed_points, progress); 
     }
 }
 
