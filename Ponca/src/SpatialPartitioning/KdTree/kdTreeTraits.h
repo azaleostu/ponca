@@ -10,13 +10,19 @@
 
 #include <Eigen/Geometry> // aabb
 
+#if defined(__has_builtin)
+#if __has_builtin(__builtin_clz)
+#define HAS_BUILTIN_CLZ
+#endif
+#endif
+
 namespace Ponca {
 #ifndef PARSED_WITH_DOXYGEN
 namespace internal
 {
     constexpr int clz(unsigned int value)
     {
-#if defined(__has_builtin) && __has_builtin(__builtin_clz)
+#ifdef HAS_BUILTIN_CLZ
         return __builtin_clz(value);
 #else
         if (value == 0)
