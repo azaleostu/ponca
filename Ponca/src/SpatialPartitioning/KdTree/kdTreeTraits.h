@@ -42,32 +42,26 @@ template <typename NodeIndex, typename Scalar, int DIM>
 struct KdTreeDefaultInnerNode
 {
 private:
-    enum
-    {
-        // The minimum bit width required to store the split dimension.
-        // 
-        // Equal to the index of DIM's most significant bit (starting at 1), e.g.:
-        // With DIM = 4,
-        //             -------------
-        // DIM =    0b | 1 | 0 | 0 |
-        //             -------------
-        // Bit index =  #3  #2  #1
-        // 
-        // The MSB has an index of 3, so we store the dimension on 3 bits.
-        DIM_BITS = sizeof(unsigned int)*8 - internal::clz((unsigned int)DIM),
-    };
-
     // The node stores bitfields as unsigned indices.
     using UIndex = typename std::make_unsigned<NodeIndex>::type;
+    
+    // The minimum bit width required to store the split dimension.
+    // 
+    // Equal to the index of DIM's most significant bit (starting at 1), e.g.:
+    // With DIM = 4,
+    //             -------------
+    // DIM =    0b | 1 | 0 | 0 |
+    //             -------------
+    // Bit index =  #3  #2  #1
+    // 
+    // The MSB has an index of 3, so we store the dimension on 3 bits.
+    static constexpr std::size_t DIM_BITS = sizeof(unsigned int)*8 - internal::clz((unsigned int)DIM);
 
 public:
-    enum
-    {
-        /*!
-         * \brief The bit width used to store the first child index.
-         */
-        INDEX_BITS = sizeof(UIndex)*8 - DIM_BITS,
-    };
+    /*!
+     * \brief The bit width used to store the first child index.
+     */
+    static constexpr std::size_t INDEX_BITS = sizeof(UIndex)*8 - DIM_BITS;
 
     Scalar split_value;
     UIndex first_child_id : INDEX_BITS;
@@ -94,15 +88,6 @@ private:
     using InnerType = KdTreeDefaultInnerNode<NodeIndex, Scalar, DataPoint::Dim>;
 
 public:
-    enum
-    {
-        /*!
-         * \brief The maximum number of nodes that a kd-tree can have when using
-         * this node type.
-         */
-        MAX_COUNT = std::size_t(2) << InnerType::INDEX_BITS,
-    };
-
     /*!
      * \brief The type used to store node bounding boxes.
      *
@@ -110,6 +95,12 @@ public:
      * `DataPoint::VectorType`.
      */
     using AabbType = Eigen::AlignedBox<Scalar, DataPoint::Dim>;
+
+    /*!
+     * \brief The maximum number of nodes that a kd-tree can have when using
+     * this node type.
+     */
+    static constexpr std::size_t MAX_COUNT = std::size_t(2) << InnerType::INDEX_BITS;
 
     KdTreeDefaultNode() = default;
     
@@ -198,17 +189,9 @@ private:
 /*!
  * \brief The default traits type used by the kd-tree.
  */
-template <typename _DataPoint>
+template <typename _DataPoint, bool AllowInverseSampleMapping = false>
 struct KdTreeDefaultTraits
 {
-    enum
-    {
-        /*!
-         * \brief A compile-time constant specifying the maximum depth of the kd-tree.
-         */
-        MAX_DEPTH = 32,
-    };
-
     /*!
      * \brief The type used to store point data.
      *
@@ -230,5 +213,16 @@ struct KdTreeDefaultTraits
     using NodeIndexType = std::size_t;
     using NodeType      = KdTreeDefaultNode<IndexType, NodeIndexType, DataPoint, LeafSizeType>;
     using NodeContainer = std::vector<NodeType>;
+    
+    /*!
+     * \brief A compile-time constant specifying the maximum depth of the kd-tree.
+     */
+    static constexpr int MAX_DEPTH = 32;
+
+    /*!
+     * \brief A compile-time constant specifying whether the kd-tree should
+     * allow mapping point indices to their corresponding sample indices.
+     */
+    static constexpr bool ALLOW_INVERSE_SAMPLE_MAPPING = AllowInverseSampleMapping;
 };
 } // namespace Ponca

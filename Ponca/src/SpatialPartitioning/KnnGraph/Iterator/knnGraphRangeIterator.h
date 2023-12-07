@@ -18,7 +18,10 @@ protected:
     friend class KnnGraphRangeQuery<Traits>;
 
 public:
-    inline KnnGraphRangeIterator(KnnGraphRangeQuery<Traits>* query, int index = -1) : m_query(query), m_index(index) {}
+    using IndexType = typename Traits::IndexType;
+
+    inline KnnGraphRangeIterator(KnnGraphRangeQuery<Traits>* query, IndexType index = -1)
+        : m_query(query), m_index(index) {}
 
 public:
     bool operator != (const KnnGraphRangeIterator& other) const{
@@ -29,13 +32,13 @@ public:
         m_query->advance(*this);
     }
 
-    int  operator *  () const{
+    IndexType operator * () const{
         return m_index;
     }
 
 protected:
     KnnGraphRangeQuery<Traits>* m_query {nullptr};
-    int m_index {-1};
+    IndexType m_index {-1};
 };
 
 } // namespace Ponca

@@ -61,7 +61,7 @@ protected:
     }
 
     inline void advance(Iterator& iterator){
-        const auto& points  = m_graph->m_kdTreePoints;
+        const auto& points  = m_graph->m_kdtree.points();
         const auto& point   = points[QueryType::input()].pos();
 
         if(! (iterator != end())) return;
@@ -72,18 +72,17 @@ protected:
         }
         else
         {
-            int idx_current = m_stack.top();
+            IndexType idx_current = m_stack.top();
             m_stack.pop();
 
             PONCA_DEBUG_ASSERT((point - points[idx_current].pos()).squaredNorm() < QueryType::squared_radius());
 
             iterator.m_index = idx_current;
 
-            for(int idx_nei : m_graph->k_nearest_neighbors(idx_current))
+            for(IndexType idx_nei : m_graph->k_nearest_neighbors(idx_current))
             {
                 PONCA_DEBUG_ASSERT(idx_nei>=0);
                 Scalar d  = (point - points[idx_nei].pos()).squaredNorm();
-                Scalar th = QueryType::descentDistanceThreshold();
                 if((point - points[idx_nei].pos()).squaredNorm() < QueryType::descentDistanceThreshold() && m_flag.insert(idx_nei).second)
                 {
                     m_stack.push(idx_nei);
@@ -95,8 +94,8 @@ protected:
 
 protected:
     const KnnGraphBase<Traits>*   m_graph {nullptr};
-    std::set<int> m_flag;       ///< store visited ids
-    std::stack<int>   m_stack;  ///< hold ids (ids range from 0 to point cloud size)
+    std::set<IndexType> m_flag;       ///< store visited ids
+    std::stack<IndexType>   m_stack;  ///< hold ids (ids range from 0 to point cloud size)
 };
 
 } // namespace Ponca

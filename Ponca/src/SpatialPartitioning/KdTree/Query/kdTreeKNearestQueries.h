@@ -25,7 +25,7 @@ public:
     using QueryAccelType = KdTreeQuery<Traits>;
     using Iterator       = IteratorType<typename Traits::IndexType, typename Traits::DataPoint>;
 
-    inline KdTreeKNearestQueryBase(const KdTreeBase<Traits>* kdtree, IndexType k, typename QueryType::InputType input) :
+    inline KdTreeKNearestQueryBase(const KdTreeImplBase<Traits>* kdtree, IndexType k, typename QueryType::InputType input) :
             KdTreeQuery<Traits>(kdtree), QueryType(k, input) { }
 
 public:
@@ -41,7 +41,7 @@ public:
 
 protected:
     inline void search(){
-        KdTreeQuery<Traits>::search_internal(QueryType::getInputPosition(QueryAccelType::m_kdtree->point_data()),
+        KdTreeQuery<Traits>::search_internal(QueryType::getInputPosition(QueryAccelType::m_kdtree->points()),
                                              [](IndexType, IndexType){},
                                              [this](){return QueryType::descentDistanceThreshold();},
                                              [this](IndexType idx){return QueryType::skipIndexFunctor(idx);},

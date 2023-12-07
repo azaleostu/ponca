@@ -30,7 +30,7 @@ protected:
     friend Iterator;
 
 public:
-    KdTreeRangeQueryBase(const KdTreeBase<Traits>* kdtree, Scalar radius, typename QueryType::InputType input) :
+    KdTreeRangeQueryBase(const KdTreeImplBase<Traits>* kdtree, Scalar radius, typename QueryType::InputType input) :
             KdTreeQuery<Traits>(kdtree), QueryType(radius, input){}
 
 public:
@@ -47,9 +47,8 @@ public:
 
 protected:
     inline void advance(Iterator& it){
-        const auto& points  = QueryAccelType::m_kdtree->point_data();
-        const auto& indices = QueryAccelType::m_kdtree->index_data();
-        const auto& point   = QueryType::getInputPosition(points);
+        const auto& points = QueryAccelType::m_kdtree->points();
+        const auto& point  = QueryType::getInputPosition(points);
 
         auto descentDistanceThreshold = [this](){return QueryType::descentDistanceThreshold();};
         auto skipFunctor              = [this](IndexType idx){return QueryType::skipIndexFunctor(idx);};
@@ -60,12 +59,12 @@ protected:
             return true;
         };
 
-        if (points.empty() || indices.empty())
+        if (points.empty() || QueryAccelType::m_kdtree->sample_count() == 0)
             throw std::invalid_argument("Empty KdTree");
 
         for(IndexType i=it.m_start; i<it.m_end; ++i)
         {
-            IndexType idx = indices[i];
+            IndexType idx = QueryAccelType::m_kdtree->point_from_sample(i);
             if(skipFunctor(idx)) continue;
 
             Scalar d = (point - points[idx].pos()).squaredNorm();

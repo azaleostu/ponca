@@ -29,7 +29,8 @@ template <typename Traits>class KnnGraphKNearestQuery
 #endif
 {
 public:
-    using Iterator = typename Traits::IndexContainer::const_iterator;
+    using IndexType = typename Traits::IndexType;
+    using Iterator  = typename Traits::IndexContainer::const_iterator;
 #ifdef PARSED_WITH_DOXYGEN
     using QueryType = KNearestIndexQuery<typename Traits::IndexType, typename Traits::DataPoint::Scalar>;
 #else
@@ -37,18 +38,21 @@ public:
 #endif
 
 public:
-    inline KnnGraphKNearestQuery(const KnnGraphBase<Traits>* graph, int index)
-        : m_graph(graph), QueryType(index){}
+    inline KnnGraphKNearestQuery(const KnnGraphBase<Traits>* graph, IndexType index)
+        : m_graph(graph), QueryType(index), m_sample(graph->m_kdtree.sample_from_point(index))
+    {
+    }
 
     inline Iterator begin() const{
-        return m_graph->index_data().begin() + QueryType::input() * m_graph->k();
+        return m_graph->index_data().begin() + m_sample * m_graph->k();
     }
     inline Iterator end() const{
-        return m_graph->index_data().begin() + (QueryType::input()+1) * m_graph->k();
+        return m_graph->index_data().begin() + (m_sample+1) * m_graph->k();
     }
 
 protected:
     const KnnGraphBase<Traits>* m_graph {nullptr};
+    IndexType m_sample {-1};
 };
 
 } // namespace Ponca

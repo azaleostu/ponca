@@ -21,6 +21,8 @@ void testKdTreeKNearestIndex(bool quick = true)
 	using VectorContainer = typename KdTree<DataPoint>::PointContainer;
 	using VectorType = typename DataPoint::VectorType;
 
+    using KdTreeType = KdTreeBase<KdTreeDefaultTraits<DataPoint, true>>;
+
 	const int N = quick ? 100 : 10000;
 	const int k = quick ? 5 : 15;
 	auto points = VectorContainer(N);
@@ -28,7 +30,7 @@ void testKdTreeKNearestIndex(bool quick = true)
 
     auto kdStart = std::chrono::system_clock::now();
 	/// [Kdtree construction and query]
-	Ponca::KdTree<DataPoint> kdTree(points);
+	KdTreeType kdTree(points);
 
 #pragma omp parallel for
 	for (int i = 0; i < N; ++i)

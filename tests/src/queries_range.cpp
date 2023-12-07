@@ -21,11 +21,15 @@ void testKdTreeRangeIndex(bool quick = true)
 	using VectorContainer = typename KdTree<DataPoint>::PointContainer;
 	using VectorType = typename DataPoint::VectorType;
 
+    using KdTreeImplType = KdTreeImplBase<KdTreeDefaultTraits<DataPoint, true>>;
+    using KdTreeType = KdTreeBase<KdTreeDefaultTraits<DataPoint, true>>;
+    using KdTreeLodType = KdTreeLodBase<KdTreeDefaultTraits<DataPoint, true>>;
+
 	const int N = quick ? 100 : 5000;
 	auto points = VectorContainer(N);
     std::generate(points.begin(), points.end(), []() {return DataPoint(VectorType::Random()); });
 
-    KdTree<DataPoint> *kdtree {nullptr};
+    KdTreeImplType *kdtree {nullptr};
 
     std::vector<int> sampling; // we need sampling for GT computation
     if(SampleKdTree){
@@ -37,12 +41,11 @@ void testKdTreeRangeIndex(bool quick = true)
         int seed = 0;
         std::sample(indices.begin(), indices.end(), sampling.begin(), N / 2, std::mt19937(seed));
 
-        kdtree = new KdTree<DataPoint> (points, sampling);
-
+        kdtree = new KdTreeLodType(points, sampling);
     } else {
         sampling.resize(N);
         std::iota(sampling.begin(), sampling.end(), 0);
-        kdtree = new KdTree<DataPoint> (points);
+        kdtree = new KdTreeType(points);
     }
 
 
@@ -66,10 +69,12 @@ void testKdTreeRangeIndex(bool quick = true)
     }
 
     if( ! SampleKdTree ){
-        Ponca::KnnGraph<DataPoint> knnGraph(*kdtree, N/4); // we need a large graph, otherwise we might miss some points
-                                                           // (which is the goal of the graph: to replace full euclidean
-                                                           // collection by geodesic-like region growing bounded by
-                                                           // the euclidean ball).
+        // we need a large graph, otherwise we might miss some points
+        // (which is the goal of the graph: to replace full euclidean
+        // collection by geodesic-like region growing bounded by
+        // the euclidean ball).
+        KnnGraph<DataPoint> knnGraph(*kdtree, N/4); 
+
 #pragma omp parallel for
         for (int i = 0; i < N; ++i)
         {
@@ -105,7 +110,7 @@ void testKdTreeRangePoint(bool quick = true)
 	std::iota(indices.begin(), indices.end(), 0);
 	std::sample(indices.begin(), indices.end(), sampling.begin(), N / 2, std::mt19937(seed));
 
-	KdTree<DataPoint> structure(points, sampling);
+	KdTreeLod<DataPoint> structure(points, sampling);
     /// [Kdtree sampling construction]
 
 #pragma omp parallel for

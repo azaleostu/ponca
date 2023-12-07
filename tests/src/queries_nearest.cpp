@@ -21,11 +21,13 @@ void testKdTreeNearestIndex(bool quick = true)
 	using VectorContainer = typename KdTree<DataPoint>::PointContainer;
 	using VectorType = typename DataPoint::VectorType;
 
+    using KdTreeType = KdTreeBase<KdTreeDefaultTraits<DataPoint, true>>;
+
 	const int N = quick ? 100 : 10000;
 	auto points = VectorContainer(N);
     std::generate(points.begin(), points.end(), []() {return DataPoint(VectorType::Random()); });
 
-	KdTree<DataPoint> kdTree(points);
+	KdTreeType kdTree(points);
 
 #pragma omp parallel for
 	for (int i = 0; i < N; ++i)
