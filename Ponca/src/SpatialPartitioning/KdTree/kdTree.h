@@ -6,8 +6,6 @@
 
 #pragma once
 
-#define PONCA_DEBUG
-
 #include "./kdTreeTraits.h"
 
 #include <memory>
@@ -240,7 +238,7 @@ public:
     /// \note Only works with a kd-tree that supports inverse sample mapping
     /// \tparam T Internal, used for compile-time checks
     template <typename T = void>
-    inline IndexType sample_from_point(IndexType point_index) const;
+    inline std::pair<bool, IndexType> sample_from_point(IndexType point_index) const;
 
 public:
     // Queries -----------------------------------------------------------------
@@ -292,7 +290,7 @@ protected:
     virtual void build_inverse_sample_mapping() = 0;
     virtual void clear_inverse_sample_mapping() = 0;
 
-    virtual IndexType sample_from_point_impl(IndexType point_index) const = 0;
+    virtual std::pair<bool, IndexType> sample_from_point_impl(IndexType point_index) const = 0;
 
 protected:
     // Internal ----------------------------------------------------------------
@@ -368,9 +366,9 @@ protected:
         m_inverse_indices.clear();
     }
 
-    IndexType sample_from_point_impl(IndexType point_index) const override
+    std::pair<bool, IndexType> sample_from_point_impl(IndexType point_index) const override
     {
-        return m_inverse_indices[point_index];
+        return {true, m_inverse_indices[point_index]};
     }
 };
 
@@ -422,9 +420,11 @@ protected:
         m_inverse_map.clear();
     }
 
-    IndexType sample_from_point_impl(IndexType point_index) const override
+    std::pair<bool, IndexType> sample_from_point_impl(IndexType point_index) const override
     {
-        return m_inverse_map.at(point_index);
+        auto it = m_inverse_map.find(point_index);
+        bool found = it != m_inverse_map.end();
+        return {found, found ? it->second : -1};
     }
 };
 

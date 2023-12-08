@@ -39,8 +39,11 @@ public:
 
 public:
     inline KnnGraphKNearestQuery(const KnnGraphBase<Traits>* graph, IndexType index)
-        : m_graph(graph), QueryType(index), m_sample(graph->m_kdtree.sample_from_point(index))
+        : m_graph(graph), QueryType(index)
     {
+        auto sample_res = graph->m_kdtree.sample_from_point(index);
+        PONCA_DEBUG_ASSERT(sample_res.first);
+        m_sample = sample_res.second;
     }
 
     inline Iterator begin() const{

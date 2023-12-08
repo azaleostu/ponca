@@ -150,7 +150,8 @@ namespace internal
 
 template<typename Traits>
 template<typename T>
-auto KdTreeImplBase<Traits>::sample_from_point(IndexType point_index) const -> IndexType
+auto KdTreeImplBase<Traits>::sample_from_point(IndexType point_index) const
+    -> std::pair<bool, IndexType>
 {
     static_assert(internal::dependent_bool<SUPPORTS_INVERSE_SAMPLE_MAPPING, T>::value,
         "Call to \"sample_from_point\" on a KdTree that does not support inverse sample mapping");

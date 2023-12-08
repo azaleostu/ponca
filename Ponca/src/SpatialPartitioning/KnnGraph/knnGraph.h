@@ -56,8 +56,8 @@ public:
     friend class KnnGraphKNearestQuery<Traits>; // This type must be equal to KnnGraphBase::KNearestIndexQuery
     friend class KnnGraphRangeQuery<Traits>;    // This type must be equal to KnnGraphBase::RangeIndexQuery
 
-    static_assert( KdTreeImplBase<Traits>::SUPPORTS_INVERSE_SAMPLE_MAPPING,
-                   "KnnGraphBase requires a KdTree that support inverse sample mapping" );
+    static_assert(KdTreeImplBase<Traits>::SUPPORTS_INVERSE_SAMPLE_MAPPING,
+        "KnnGraphBase requires a KdTree that support inverse sample mapping");
 
     // knnGraph ----------------------------------------------------------------
 public:
