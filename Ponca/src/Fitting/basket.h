@@ -83,6 +83,12 @@ namespace internal
     public:
         using type = typename Base::template DDerType<P, W, Type, PrimitiveDer<P, W, Type, Aggregate>>;
     };
+
+    template <typename BasketType, int Type,
+        template <class, class, int, typename> class... Exts>
+    struct BasketAutoDiffAggregateTest
+    {
+    };
 }
 #endif
 
@@ -261,6 +267,12 @@ namespace internal
     class BasketAutoDiff : public internal::BasketAutoDiffAggregate<P, W, Type, Ext0, Exts...>::type
     {
     }; // class BasketAutoDiff
+
+    template <typename BasketType, int Type,
+        template <class, class, int, typename> class... Exts>
+    class BasketAutoDiffTest : public internal::BasketAutoDiffAggregateTest<BasketType, Type, Exts...>::type
+    {
+    }; // class BasketAutoDiffTest
 
 } //namespace Ponca
 
