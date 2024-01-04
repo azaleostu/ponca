@@ -14,6 +14,9 @@
 
 using namespace Ponca;
 
+template <typename DataPoint>
+using MyTraits = KdTreeDefaultTraits<DataPoint, KdTreeDefaultNode, true>;
+
 template<typename DataPoint>
 void testKdTreeKNearestIndex(bool quick = true)
 {
@@ -28,7 +31,7 @@ void testKdTreeKNearestIndex(bool quick = true)
 
     auto kdStart = std::chrono::system_clock::now();
 	/// [Kdtree construction and query]
-	Ponca::KdTreeDense<DataPoint> kdTree(points);
+	Ponca::KdTreeDenseBase<MyTraits<DataPoint>> kdTree(points);
 
 #pragma omp parallel for
 	for (int i = 0; i < N; ++i)

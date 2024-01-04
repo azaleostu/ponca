@@ -244,20 +244,13 @@ struct KdTreeDefaultNode : public KdTreeCustomizableNode<Index, NodeIndex, DataP
  * \tparam _NodeType Type used to store nodes, set by default to #KdTreeDefaultNode
  */
 template <typename _DataPoint,
-        template <typename /*Index*/,
-                  typename /*NodeIndex*/,
-                  typename /*DataPoint*/,
-                  typename /*LeafSize*/> typename _NodeType = KdTreeDefaultNode>
+    template <typename /*Index*/,
+              typename /*NodeIndex*/,
+              typename /*DataPoint*/,
+              typename /*LeafSize*/> typename _NodeType = KdTreeDefaultNode,
+    bool AllowInverseSampleMapping = false>
 struct KdTreeDefaultTraits
 {
-    enum
-    {
-        /*!
-         * \brief A compile-time constant specifying the maximum depth of the kd-tree.
-         */
-        MAX_DEPTH = 32,
-    };
-
     /*!
      * \brief The type used to store point data.
      *
@@ -279,5 +272,18 @@ struct KdTreeDefaultTraits
     using NodeIndexType = std::size_t;
     using NodeType      = _NodeType<IndexType, NodeIndexType, DataPoint, LeafSizeType>;
     using NodeContainer = std::vector<NodeType>;
+
+    /*!
+     * \brief A compile-time constant specifying the maximum depth of the kd-tree.
+     */
+    static constexpr int MAX_DEPTH = 32;
+
+    /*!
+     * \brief A compile-time constant specifying whether the kd-tree should
+     * allow mapping point indices to their corresponding sample indices.
+     *
+     * \see KdTreeBase::SUPPORTS_INVERSE_SAMPLE_MAPPING
+     */
+    static constexpr bool ALLOW_INVERSE_SAMPLE_MAPPING = AllowInverseSampleMapping;
 };
 } // namespace Ponca

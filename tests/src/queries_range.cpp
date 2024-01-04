@@ -14,6 +14,9 @@
 
 using namespace Ponca;
 
+template <typename DataPoint>
+using MyTraits = KdTreeDefaultTraits<DataPoint, KdTreeDefaultNode, true>;
+
 template<typename DataPoint, bool SampleKdTree = true>
 void testKdTreeRangeIndex(bool quick = true)
 {
@@ -27,7 +30,7 @@ void testKdTreeRangeIndex(bool quick = true)
 
     /// [KdTree pointer usage]
     // Abstract pointer type that can receive KdTreeSparse or KdTreeDense objects
-    KdTree<DataPoint> *kdtree {nullptr};
+    KdTreeBase<MyTraits<DataPoint>> *kdtree {nullptr};
     /// [KdTree pointer usage]
 
     std::vector<int> sampling; // we need sampling for GT computation
@@ -42,15 +45,14 @@ void testKdTreeRangeIndex(bool quick = true)
 
         /// [KdTree assign sparse]
         // assign sparse
-        kdtree = new KdTreeSparse<DataPoint> (points, sampling);
+        kdtree = new KdTreeSparseBase<MyTraits<DataPoint>> (points, sampling);
         /// [KdTree assign sparse]
-
     } else {
         sampling.resize(N);
         std::iota(sampling.begin(), sampling.end(), 0);
         /// [KdTree assign dense]
         // assign dense
-        kdtree = new KdTreeDense<DataPoint> (points);
+        kdtree = new KdTreeDenseBase<MyTraits<DataPoint>> (points);
         /// [KdTree assign dense]
     }
 
@@ -63,33 +65,27 @@ void testKdTreeRangeIndex(bool quick = true)
         for (int j : kdtree->range_neighbors(i, r)) {
             resultsTree.push_back(j);
         }
-        if( SampleKdTree ) {
-            bool resTree = check_range_neighbors<Scalar, VectorContainer>(points, sampling, i, r, resultsTree);
-            VERIFY(resTree);
-        }
-        else {
-            bool resTree = check_range_neighbors<Scalar, VectorContainer>(points, sampling, i, r, resultsTree);
-            VERIFY(resTree);
-        }
+        bool resTree = check_range_neighbors<Scalar, VectorContainer>(points, sampling, i, r, resultsTree);
+        VERIFY(resTree);
     }
 
-    if( ! SampleKdTree ){
-        Ponca::KnnGraph<DataPoint> knnGraph(*kdtree, N/4); // we need a large graph, otherwise we might miss some points
-                                                           // (which is the goal of the graph: to replace full euclidean
-                                                           // collection by geodesic-like region growing bounded by
-                                                           // the euclidean ball).
-#pragma omp parallel for
-        for (int i = 0; i < N; ++i)
-        {
-            Scalar r = Eigen::internal::random<Scalar>(0., 0.5);
-            std::vector<int> resultsGraph;
+    Ponca::KnnGraph<DataPoint> knnGraph(*kdtree, N/4); // we need a large graph, otherwise we might miss some points
+                                                       // (which is the goal of the graph: to replace full euclidean
+                                                       // collection by geodesic-like region growing bounded by
+                                                       // the euclidean ball).
 
-            for (int j : knnGraph.range_neighbors(i, r)) {
-                resultsGraph.push_back(j);
-            }
-            bool resGraph = check_range_neighbors<Scalar, VectorContainer>(points, sampling, i, r, resultsGraph);
-            VERIFY(resGraph);
+#pragma omp parallel for
+    for (int i = 0; i < int(sampling.size()); ++i)
+    {
+        Scalar r = Eigen::internal::random<Scalar>(0., 0.5);
+        std::vector<int> resultsGraph;
+
+        int sample = kdtree->pointFromSample(i);
+        for (int j : knnGraph.range_neighbors(sample, r)) {
+            resultsGraph.push_back(j);
         }
+        bool resGraph = check_range_neighbors<Scalar, VectorContainer>(points, sampling, sample, r, resultsGraph);
+        VERIFY(resGraph);
     }
 
     delete kdtree;

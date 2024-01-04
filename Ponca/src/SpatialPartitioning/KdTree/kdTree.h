@@ -13,6 +13,7 @@
 #include <numeric>
 #include <optional>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -124,7 +125,17 @@ public:
     /// \brief The maximum depth of the kd-tree.
     static constexpr int MAX_DEPTH = Traits::MAX_DEPTH;
 
-    static constexpr bool SUPPORTS_SUBSAMPLING = false;
+    /// \brief Whether the kd-tree supports mapping point indices to their
+    /// corresponding sample indices
+    ///
+    /// By default, the kd-tree only supports mapping sample indices to point
+    /// indices via its \ref pointFromSample function. If this constant is
+    /// true, the kd-tree also supports the inverse mapping via its \ref
+    /// sampleFromPoint function.
+    ///
+    /// \note Even for kd-tree that do not use a subsampling of the original
+    /// data points, sample indices will not be the same as point indices.
+    static constexpr bool SUPPORTS_INVERSE_SAMPLE_MAPPING = Traits::ALLOW_INVERSE_SAMPLE_MAPPING;
 
     static_assert(std::is_same<typename PointContainer::value_type, DataPoint>::value,
         "PointContainer must contain DataPoints");
@@ -255,6 +266,12 @@ public:
         return m_points[pointFromSample(sample_index)];
     }
 
+    /// Return the sample index associated with the specified point index
+    /// \note Only works with a kd-tree that supports inverse sample mapping
+    /// \tparam T Internal, used for compile-time checks
+    template <typename T = void>
+    inline std::optional<IndexType> sampleFromPoint(IndexType point_index) const;
+
     // Query -------------------------------------------------------------------
 public :
     KdTreeKNearestPointQuery<Traits> k_nearest_neighbors(const VectorType& point, IndexType k) const
@@ -300,6 +317,11 @@ protected:
 
     LeafSizeType m_min_cell_size {64}; ///< Minimal number of points per leaf
     NodeIndexType m_leaf_count {0}; ///< Number of leaves in the Kdtree (computed during construction)
+
+    virtual void build_inverse_sample_mapping() = 0;
+    virtual void clear_inverse_sample_mapping() = 0;
+
+    virtual std::optional<IndexType> sampleFromPoint_impl(IndexType point_index) const = 0;
 
     // Internal ----------------------------------------------------------------
 protected:
@@ -366,6 +388,23 @@ public:
     {
         this->build(std::forward<PointUserContainer>(points));
     }
+
+protected:
+    using IndexType      = typename Base::IndexType;
+    using IndexContainer = typename Base::IndexContainer;
+
+    IndexContainer m_inverse_indices;
+
+    void build_inverse_sample_mapping() override;
+    void clear_inverse_sample_mapping() override
+    {
+        m_inverse_indices.clear();
+    }
+
+    std::optional<IndexType> sampleFromPoint_impl(IndexType point_index) const override
+    {
+        return m_inverse_indices[point_index];
+    }
 };
 
 /*!
@@ -389,8 +428,6 @@ private:
     using Base = KdTreeBase<Traits>;
 
 public:
-    static constexpr bool SUPPORTS_SUBSAMPLING = false;
-
     /// Default constructor creating an empty tree
     /// \see build
     KdTreeSparseBase() = default;
@@ -416,6 +453,24 @@ public:
     }
 
     using Base::buildWithSampling;
+
+protected:
+    using IndexType = typename Base::IndexType;
+
+    std::unordered_map<IndexType, IndexType> m_inverse_map;
+
+    void build_inverse_sample_mapping() override;
+    void clear_inverse_sample_mapping() override
+    {
+        m_inverse_map.clear();
+    }
+
+    std::optional<IndexType> sampleFromPoint_impl(IndexType point_index) const override
+    {
+        auto it = m_inverse_map.find(point_index);
+        bool found = it != m_inverse_map.end();
+        return found ? std::make_optional(it->second) : std::nullopt;
+    }
 };
 
 #include "./kdTree.hpp"

@@ -22,6 +22,10 @@ void KdTreeBase<Traits>::clear()
     m_nodes.clear();
     m_indices.clear();
     m_leaf_count = 0;
+    if constexpr (SUPPORTS_INVERSE_SAMPLE_MAPPING)
+    {
+        clear_inverse_sample_mapping();
+    }
 }
 
 template<typename Traits>
@@ -135,8 +139,34 @@ inline void KdTreeBase<Traits>::buildWithSampling(PointUserContainer&& points,
     m_indices = std::move(sampling);
 
     this->build_rec(0, 0, sample_count(), 1);
+    if constexpr (SUPPORTS_INVERSE_SAMPLE_MAPPING)
+    {
+        build_inverse_sample_mapping();
+    }
 
     PONCA_DEBUG_ASSERT(this->valid());
+}
+
+#ifndef PARSED_WITH_DOXYGEN
+namespace internal
+{
+    // Evaluates to B at instantiation time
+    template <bool B, typename>
+    struct dependent_bool
+    {
+        static constexpr bool value = B;
+    };
+}
+#endif
+
+template <typename Traits>
+template <typename T>
+auto KdTreeBase<Traits>::sampleFromPoint(IndexType point_index) const
+    -> std::optional<IndexType>
+{
+    static_assert(internal::dependent_bool<SUPPORTS_INVERSE_SAMPLE_MAPPING, T>::value,
+        "Call to \"sampleFromPoint\" on a KdTree that does not suport inverse sample mapping");
+    return sampleFromPoint_impl(point_index);
 }
 
 template<typename Traits>
@@ -188,4 +218,27 @@ auto KdTreeBase<Traits>::partition(IndexType start, IndexType end, int dim, Scal
     auto distance = std::distance(m_indices.begin(), it);
     
     return static_cast<IndexType>(distance);
+}
+
+template <typename Traits>
+void KdTreeDenseBase<Traits>::build_inverse_sample_mapping()
+{
+    auto samples = Base::sample_count();
+    m_inverse_indices.reserve(samples);
+    for (IndexType i = 0; i < samples; ++i)
+    {
+        m_inverse_indices[Base::pointFromSample(i)] = i;
+    }
+}
+
+template <typename Traits>
+void KdTreeSparseBase<Traits>::build_inverse_sample_mapping()
+{
+    auto samples = Base::sample_count();
+    auto bucket_count = samples / 4;
+    m_inverse_map = std::unordered_map<IndexType, IndexType>(bucket_count);
+    for (IndexType i = 0; i < samples; ++i)
+    {
+        m_inverse_map[Base::pointFromSample(i)] = i;
+    }
 }

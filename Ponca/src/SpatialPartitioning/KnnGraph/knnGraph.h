@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include "./knnGraphTraits.h"
-
 #include "Query/knnGraphKNearestQuery.h"
 #include "Query/knnGraphRangeQuery.h"
 
@@ -16,7 +14,6 @@
 #include <memory>
 
 namespace Ponca {
-
 template <typename Traits> class KnnGraphBase;
 
 /*!
@@ -24,78 +21,63 @@ template <typename Traits> class KnnGraphBase;
  *
  * Provides default implementation of the KnnGraph
  *
- * \see KnnGraphDefaultTraits for the default trait interface documentation.
+ * \see KdTreeDefaultTraits for the default trait interface documentation.
  * \see KnnGraphBase for complete API
  */
 template <typename DataPoint>
-using KnnGraph = KnnGraphBase<KnnGraphDefaultTraits<DataPoint>>;
+using KnnGraph = KnnGraphBase<KdTreeDefaultTraits<DataPoint, KdTreeDefaultNode, true>>;
 
 /*!
  * \brief Customizable base class for KnnGraph datastructure
  *
- * \see Ponca::KnGraph
+ * \see Ponca::KnnGraph
  *
  * \tparam Traits Traits type providing the types and constants used by the KnnGraph. Must have the
  * same interface as the default traits type.
  *
- * \see KnnGraphDefaultTraits for the trait interface documentation.
- *
+ * \see KdTreeDefaultTraits for the trait interface documentation.
  */
 template <typename Traits> class KnnGraphBase
 {
 public:
-    using DataPoint  = typename Traits::DataPoint; ///< DataPoint given by user via Traits
-    using Scalar     = typename DataPoint::Scalar; ///< Scalar given by user via DataPoint
-    using VectorType = typename DataPoint::VectorType; ///< VectorType given by user via DataPoint
-
+    using DataPoint      = typename Traits::DataPoint; ///< DataPoint given by user via Traits
     using IndexType      = typename Traits::IndexType;
     using PointContainer = typename Traits::PointContainer; ///< Container for DataPoint used inside the KdTree
     using IndexContainer = typename Traits::IndexContainer; ///< Container for indices used inside the KdTree
 
     using KNearestIndexQuery = KnnGraphKNearestQuery<Traits>;
     using RangeIndexQuery    = KnnGraphRangeQuery<Traits>;
+    
+    using Scalar     = typename DataPoint::Scalar; ///< Scalar given by user via DataPoint
+    using VectorType = typename DataPoint::VectorType; ///< VectorType given by user via DataPoint
 
     friend class KnnGraphKNearestQuery<Traits>; // This type must be equal to KnnGraphBase::KNearestIndexQuery
     friend class KnnGraphRangeQuery<Traits>;    // This type must be equal to KnnGraphBase::RangeIndexQuery
 
+    static_assert(KdTreeBase<Traits>::SUPPORTS_INVERSE_SAMPLE_MAPPING,
+        "KnnGraphBase requires a KdTree that supports inverse sample mapping");
+
     // knnGraph ----------------------------------------------------------------
 public:
-    /// \brief Build a KnnGraph from a KdTreeDense
+    /// \brief Build a KnnGraph from a KdTree
     ///
     /// \param k Number of requested neighbors. Might be reduced if k is larger than the kdtree size - 1
-    ///          (query point is not included in query output, thus -1)
+    /// (query point is not included in query output, thus -1)
     ///
-    /// \warning Stores a const reference to kdtree.point_data()
-    /// \warning KdTreeTraits compatibility is checked with static assertion
-    template<typename KdTreeTraits>
-    inline KnnGraphBase(const KdTreeBase<KdTreeTraits>& kdtree, int k = 6)
+    /// \warning Stores a const reference to kdtree
+    inline KnnGraphBase(const KdTreeBase<Traits>& kdtree, int k = 6)
             : m_k(std::min(k,kdtree.sample_count()-1)),
-              m_kdTreePoints(kdtree.points())
+              m_kdTree(kdtree)
     {
-        static_assert( std::is_same<typename Traits::DataPoint, typename KdTreeTraits::DataPoint>::value,
-                       "KdTreeTraits::DataPoint is not equal to Traits::DataPoint" );
-        static_assert( std::is_same<typename Traits::PointContainer, typename KdTreeTraits::PointContainer>::value,
-                       "KdTreeTraits::PointContainer is not equal to Traits::PointContainer" );
-        static_assert( std::is_same<typename Traits::IndexContainer, typename KdTreeTraits::IndexContainer>::value,
-                       "KdTreeTraits::IndexContainer is not equal to Traits::IndexContainer" );
+        const IndexType samples = m_kdTree.sample_count();
+        m_indices.resize(samples * m_k, -1);
 
-        // We need to account for the entire point set, irrespectively of the sampling. This is because the kdtree
-        // (k_nearest_neighbors) return ids of the entire point set, not it sub-sampled list of ids.
-        // \fixme Update API to properly handle kdtree subsampling
-        const int cloudSize   = kdtree.point_count();
-        {
-            const int samplesSize = kdtree.sample_count();
-            eigen_assert(cloudSize == samplesSize);
-        }
-
-        m_indices.resize(cloudSize * m_k, -1);
-
-#pragma omp parallel for shared(kdtree, cloudSize) default(none)
-        for(int i=0; i<cloudSize; ++i)
+#pragma omp parallel for shared(m_kdTree, samples) default(none)
+        for(IndexType i=0; i<samples; ++i)
         {
             int j = 0;
-            for(auto n : kdtree.k_nearest_neighbors(typename KdTreeTraits::IndexType(i),
-                                                   typename KdTreeTraits::IndexType(m_k)))
+            IndexType sample = m_kdTree.pointFromSample(i);
+            for(auto n : m_kdTree.k_nearest_neighbors(sample, IndexType(m_k)))
             {
                 m_indices[i * m_k + j] = n;
                 ++j;
@@ -105,11 +87,11 @@ public:
 
     // Query -------------------------------------------------------------------
 public:
-    inline KNearestIndexQuery k_nearest_neighbors(int index) const{
+    inline KNearestIndexQuery k_nearest_neighbors(IndexType index) const {
         return KNearestIndexQuery(this, index);
     }
 
-    inline RangeIndexQuery    range_neighbors(int index, Scalar r) const{
+    inline RangeIndexQuery range_neighbors(IndexType index, Scalar r) const {
         return RangeIndexQuery(this, r, index);
     }
 
@@ -118,7 +100,7 @@ public:
     /// \brief Number of neighbor per vertex
     inline int k() const { return m_k; }
     /// \brief Number of vertices in the neighborhood graph
-    inline int size() const { return m_indices.size()/m_k; }
+    inline IndexType size() const { return IndexType(m_indices.size()/m_k); }
 
     // Data --------------------------------------------------------------------
 private:
@@ -126,7 +108,7 @@ private:
     IndexContainer m_indices; ///< \brief Stores neighborhood relations
 
 protected: // for friends relations
-    const PointContainer& m_kdTreePoints;
+    const KdTreeBase<Traits>& m_kdTree;
     inline const IndexContainer& index_data() const { return m_indices; };
 };
 
