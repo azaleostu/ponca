@@ -163,7 +163,7 @@ bool KdTreeBase<Traits>::build_rec(NodeIndexType node_id, IndexType start, Index
 
     node.set_is_leaf(
         end-start <= m_min_cell_size ||
-        level >= Traits::MAX_DEPTH ||
+        level >= m_max_depth ||
         // Since we add 2 nodes per inner node we need to stop if we can't add
         // them both
         (NodeIndexType)m_nodes.size() > MAX_NODE_COUNT - 2);

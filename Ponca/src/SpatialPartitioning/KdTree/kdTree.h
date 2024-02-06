@@ -238,6 +238,17 @@ public:
         m_min_cell_size = min_cell_size;
     }
 
+    inline int max_depth() const
+    {
+        return m_max_depth;
+    }
+
+    inline void set_max_depth(int max_depth)
+    {
+        PONCA_DEBUG_ASSERT(0 < max_depth && max_depth <= MAX_DEPTH);
+        m_max_depth = max_depth;
+    }
+
     // Index mapping -----------------------------------------------------------
 public:
     /// Return the point index associated with the specified sample index
@@ -306,6 +317,7 @@ protected:
     IndexContainer m_indices;
 
     int m_depth = 0;
+    int m_max_depth = 0;
     LeafSizeType m_min_cell_size {64}; ///< Minimal number of points per leaf
     NodeIndexType m_leaf_count {0}; ///< Number of leaves in the Kdtree (computed during construction)
 
