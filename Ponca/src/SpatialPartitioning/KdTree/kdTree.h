@@ -300,6 +300,7 @@ protected:
     NodeContainer m_nodes;
     IndexContainer m_indices;
 
+    int m_depth = 0;
     LeafSizeType m_min_cell_size {64}; ///< Minimal number of points per leaf
     NodeIndexType m_leaf_count {0}; ///< Number of leaves in the Kdtree (computed during construction)
 

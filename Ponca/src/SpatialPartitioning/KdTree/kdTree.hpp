@@ -8,11 +8,11 @@
 
 template<typename Traits>
 template<typename PointUserContainer, typename Converter>
-inline void KdTreeBase<Traits>::build(PointUserContainer&& points, Converter c, ProgressController progress)
+inline bool KdTreeBase<Traits>::build(PointUserContainer&& points, Converter c, ProgressController progress)
 {
     IndexContainer ids(points.size());
     std::iota(ids.begin(), ids.end(), 0);
-    this->buildWithSampling(std::forward<PointUserContainer>(points), std::move(ids), std::move(c), std::move(progress));
+    return this->buildWithSampling(std::forward<PointUserContainer>(points), std::move(ids), std::move(c), std::move(progress));
 }
 
 template<typename Traits>
@@ -21,6 +21,7 @@ void KdTreeBase<Traits>::clear()
     m_points.clear();
     m_nodes.clear();
     m_indices.clear();
+    m_depth = 0;
     m_leaf_count = 0;
 }
 
@@ -148,6 +149,11 @@ bool KdTreeBase<Traits>::build_rec(NodeIndexType node_id, IndexType start, Index
     if (progress.should_continue && !progress.should_continue())
     {
         return false;
+    }
+
+    if (level > m_depth)
+    {
+        m_depth = level;
     }
 
     NodeType& node = m_nodes[node_id];
