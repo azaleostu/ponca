@@ -10,6 +10,7 @@
 #include "../../Common/Macro.h"
 
 #include <cstddef>
+#include <functional>
 
 #include <Eigen/Geometry>
 
@@ -236,6 +237,12 @@ struct KdTreeDefaultNode : public KdTreeCustomizableNode<Index, NodeIndex, DataP
             KdTreeDefaultLeafNode<Index, LeafSize>>;
 };
 
+struct KdTreeDefaultProgressController
+{
+    std::function<bool()> should_continue = [] { return true; };
+    std::function<void(float)> callback = [](float) {};
+};
+
 /*!
  * \brief The default traits type used by the kd-tree.
  *
@@ -279,5 +286,7 @@ struct KdTreeDefaultTraits
     using NodeIndexType = std::size_t;
     using NodeType      = _NodeType<IndexType, NodeIndexType, DataPoint, LeafSizeType>;
     using NodeContainer = std::vector<NodeType>;
+
+    using ProgressController = KdTreeDefaultProgressController;
 };
 } // namespace Ponca

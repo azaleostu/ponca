@@ -112,6 +112,8 @@ public:
     using NodeType       = typename Traits::NodeType; ///< Type of nodes used inside the KdTree
     using NodeContainer  = typename Traits::NodeContainer; ///< Container for nodes used inside the KdTree
 
+    using ProgressController = typename Traits::ProgressController;
+
     using Scalar     = typename DataPoint::Scalar; ///< Scalar given by user via DataPoint
     using VectorType = typename DataPoint::VectorType; ///< VectorType given by user via DataPoint
     using AabbType   = typename NodeType::AabbType; ///< Bounding box type given by user via NodeType
@@ -145,7 +147,7 @@ public:
     /// \param points Input points
     /// \param c Cast/Convert input point type to DataType
     template<typename PointUserContainer, typename Converter>
-    inline void build(PointUserContainer&& points, Converter c);
+    inline bool build(PointUserContainer&& points, Converter c, ProgressController progress = {});
 
     /// Convert a custom point container to the KdTree \ref PointContainer using \ref DataPoint default constructor
     struct DefaultConverter
@@ -166,9 +168,9 @@ public:
     /// \tparam PointUserContainer Input point container, transformed to PointContainer
     /// \param points Input points
     template<typename PointUserContainer>
-    inline void build(PointUserContainer&& points)
+    inline bool build(PointUserContainer&& points, ProgressController progress = {})
     {
-        build(std::forward<PointUserContainer>(points), DefaultConverter());
+        return build(std::forward<PointUserContainer>(points), DefaultConverter(), std::move(progress));
     }
 
     /// Clear tree data
@@ -313,9 +315,10 @@ protected:
     /// \param sampling Indices of points used in the tree
     /// \param c Cast/Convert input point type to DataType
     template<typename PointUserContainer, typename IndexUserContainer, typename Converter>
-    inline void buildWithSampling(PointUserContainer&& points,
+    inline bool buildWithSampling(PointUserContainer&& points,
                                   IndexUserContainer sampling,
-                                  Converter c);
+                                  Converter c,
+                                  ProgressController progress = {});
 
     /// Generate a tree sampled from a custom contained type converted using a \ref KdTreeBase::DefaultConverter
     /// \tparam PointUserContainer Input points, transformed to PointContainer
@@ -323,14 +326,15 @@ protected:
     /// \param points Input points
     /// \param sampling Samples used in the tree
     template<typename PointUserContainer, typename IndexUserContainer>
-    inline void buildWithSampling(PointUserContainer&& points,
-                                  IndexUserContainer sampling)
+    inline bool buildWithSampling(PointUserContainer&& points,
+                                  IndexUserContainer sampling,
+                                  ProgressController progress = {})
     {
-        buildWithSampling(std::forward<PointUserContainer>(points), std::move(sampling), DefaultConverter());
+        return buildWithSampling(std::forward<PointUserContainer>(points), std::move(sampling), DefaultConverter(), std::move(progress));
     }
 
 private:
-    inline void build_rec(NodeIndexType node_id, IndexType start, IndexType end, int level);
+    inline bool build_rec(NodeIndexType node_id, IndexType start, IndexType end, int level, IndexType& num_processed_points, ProgressController& progress);
     inline IndexType partition(IndexType start, IndexType end, int dim, Scalar value);
 };
 

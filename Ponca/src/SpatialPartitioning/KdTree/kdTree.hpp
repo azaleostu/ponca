@@ -8,11 +8,11 @@
 
 template<typename Traits>
 template<typename PointUserContainer, typename Converter>
-inline void KdTreeBase<Traits>::build(PointUserContainer&& points, Converter c)
+inline void KdTreeBase<Traits>::build(PointUserContainer&& points, Converter c, ProgressController progress)
 {
     IndexContainer ids(points.size());
     std::iota(ids.begin(), ids.end(), 0);
-    this->buildWithSampling(std::forward<PointUserContainer>(points), std::move(ids), std::move(c));
+    this->buildWithSampling(std::forward<PointUserContainer>(points), std::move(ids), std::move(c), std::move(progress));
 }
 
 template<typename Traits>
@@ -118,9 +118,10 @@ void KdTreeBase<Traits>::print(std::ostream& os, bool verbose) const
 
 template<typename Traits>
 template<typename PointUserContainer, typename IndexUserContainer, typename Converter>
-inline void KdTreeBase<Traits>::buildWithSampling(PointUserContainer&& points,
+inline bool KdTreeBase<Traits>::buildWithSampling(PointUserContainer&& points,
                                                   IndexUserContainer sampling,
-                                                  Converter c)
+                                                  Converter c,
+                                                  ProgressController progress)
 {
     PONCA_DEBUG_ASSERT(points.size() <= MAX_POINT_COUNT);
     this->clear();
@@ -134,14 +135,21 @@ inline void KdTreeBase<Traits>::buildWithSampling(PointUserContainer&& points,
 
     m_indices = std::move(sampling);
 
-    this->build_rec(0, 0, sample_count(), 1);
+    IndexType num_processed_points = 0;
+    bool result = this->build_rec(0, 0, sample_count(), 1, num_processed_points, progress);
 
     PONCA_DEBUG_ASSERT(this->valid());
+    return result;
 }
 
 template<typename Traits>
-void KdTreeBase<Traits>::build_rec(NodeIndexType node_id, IndexType start, IndexType end, int level)
+bool KdTreeBase<Traits>::build_rec(NodeIndexType node_id, IndexType start, IndexType end, int level, IndexType& num_processed_points, ProgressController& progress)
 {
+    if (progress.should_continue && !progress.should_continue())
+    {
+        return false;
+    }
+
     NodeType& node = m_nodes[node_id];
     AabbType aabb;
     for(IndexType i=start; i<end; ++i)
@@ -158,6 +166,13 @@ void KdTreeBase<Traits>::build_rec(NodeIndexType node_id, IndexType start, Index
     if (node.is_leaf())
     {
         ++m_leaf_count;
+
+        num_processed_points += node.leaf_size();
+        if (progress.callback)
+        {
+            progress.callback(static_cast<float>(num_processed_points) / point_count());
+        }
+        return true;
     }
     else
     {
@@ -168,8 +183,9 @@ void KdTreeBase<Traits>::build_rec(NodeIndexType node_id, IndexType start, Index
         m_nodes.emplace_back();
 
         IndexType mid_id = this->partition(start, end, split_dim, node.inner_split_value());
-        build_rec(node.inner_first_child_id(), start, mid_id, level+1);
-        build_rec(node.inner_first_child_id()+1, mid_id, end, level+1);
+        return
+            build_rec(node.inner_first_child_id(), start, mid_id, level+1) &&
+            build_rec(node.inner_first_child_id()+1, mid_id, end, level+1);
     }
 }
 
