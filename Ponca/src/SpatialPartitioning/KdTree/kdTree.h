@@ -178,6 +178,11 @@ public:
 
     // Accessors ---------------------------------------------------------------
 public:
+    inline int depth() const
+    {
+        return m_depth;
+    }
+
     inline NodeIndexType node_count() const
     {
         return m_nodes.size();
