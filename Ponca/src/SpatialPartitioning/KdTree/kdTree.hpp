@@ -190,8 +190,8 @@ bool KdTreeBase<Traits>::build_rec(NodeIndexType node_id, IndexType start, Index
 
         IndexType mid_id = this->partition(start, end, split_dim, node.inner_split_value());
         return
-            build_rec(node.inner_first_child_id(), start, mid_id, level+1) &&
-            build_rec(node.inner_first_child_id()+1, mid_id, end, level+1);
+            build_rec(node.inner_first_child_id(), start, mid_id, level+1, num_processed_points, progress) &&
+            build_rec(node.inner_first_child_id()+1, mid_id, end, level+1, num_processed_points, progress);
     }
 }
 
