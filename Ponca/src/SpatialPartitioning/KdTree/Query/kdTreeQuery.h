@@ -50,7 +50,7 @@ protected:
         const auto& points = m_kdtree->points();
 
         if (nodes.empty() || points.empty() || m_kdtree->sample_count() == 0)
-            throw std::invalid_argument("Empty KdTree");
+            return false;
 
         while(!m_stack.empty())
         {
